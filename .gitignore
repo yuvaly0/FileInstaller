@@ -1,2 +1,6 @@
 # ide settings
 FileInstaller/.vs/
+
+# build files
+FileInstaller/FileInstaller/x64
+FileInstaller/x64
