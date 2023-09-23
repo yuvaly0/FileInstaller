@@ -1,5 +1,8 @@
 #include <iostream>
+#include "./Installer/Installer.h"
 
 int main() {
-	std::cout << "hello world" << std::endl;
+	// TODO: unique_ptr
+	Installer* installer = new Installer();
+	installer->copy();
 }
