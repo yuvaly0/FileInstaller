@@ -5,7 +5,7 @@
 
 DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath) {};
 
-bool DestinationPath::pre_copy_verify() {
+bool DestinationPath::tryCreate() {
 	DWORD destinationFileAttributes = GetFileAttributes(_path);
 
 	// TODO: we might get ERROR_CANCELLED and it's ok, check REMARKS

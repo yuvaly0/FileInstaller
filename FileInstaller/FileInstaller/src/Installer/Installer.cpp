@@ -1,7 +1,5 @@
 #include <windows.h>
 #include "Installer.h"
-#include "../Path/DestinationPath/DestinationPath.h"
-#include "../Path/SourcePath/SourcePath.h"
 
 // TODO: make singleton
 Installer::Installer() {
@@ -18,12 +16,12 @@ Installer::Installer() {
 }
 
 void Installer::copy() {
-	if (!_destinationPath->pre_copy_verify()) {
+	if (!_destinationPath->tryCreate()) {
 		revert();
 	}
 
 	for (auto i = 0; i < _sourcePaths.size(); i++) {
-		Path* currentSourcePath = _sourcePaths.at(i);
+		SourcePath* currentSourcePath = _sourcePaths.at(i);
 		
 		if (!currentSourcePath->pre_copy_verify()) {
 			revert();
