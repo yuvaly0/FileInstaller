@@ -5,7 +5,7 @@
 
 Installer::Installer() {
 	_destinationPath = new DestinationPath(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise");
-	_sourcePaths = { 
+	_sourcePaths = {
 		new SourcePath(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\1.txt"),
 		new SourcePath(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\2.txt"),
 		new SourcePath(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\3.txt"),
@@ -17,7 +17,31 @@ Installer::Installer() {
 }
 
 void Installer::copy() {
+	if (!_destinationPath->verify()) {
+		revert();
+	}
 
-			
-	// 2. 
+	for (auto i = 0; i < _sourcePaths.size(); i++) {
+		Path* currentSourcePath = _sourcePaths.at(i);
+		
+		if (!currentSourcePath->verify()) {
+			revert();
+			return;
+		}
+
+		bool hasSuccedded = copy_file(currentSourcePath);
+		
+		if (!hasSuccedded) {
+			revert();
+			return;
+		}
+	}
+}
+
+bool Installer::copy_file(Path* sourcePath) {
+	return true;
+}
+
+void Installer::revert() {
+
 }
