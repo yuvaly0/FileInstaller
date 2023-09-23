@@ -2,6 +2,6 @@
 
 SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {};
 
-bool SourcePath::verify() {
+bool SourcePath::pre_copy_verify() {
 	return true;
 };

@@ -2,7 +2,7 @@
 
 DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath) {};
 
-bool DestinationPath::verify() {
+bool DestinationPath::pre_copy_verify() {
 	// 1. checks on the destination
 //	* does it exist?
 //		* if not

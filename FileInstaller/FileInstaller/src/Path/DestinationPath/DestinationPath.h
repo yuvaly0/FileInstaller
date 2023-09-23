@@ -7,6 +7,6 @@ class DestinationPath : public Path
 public:
 	DestinationPath(LPCWSTR destinationPath);
 
-	bool verify();
+	bool pre_copy_verify();
 };
 

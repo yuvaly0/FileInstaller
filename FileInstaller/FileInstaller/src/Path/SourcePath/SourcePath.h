@@ -5,6 +5,6 @@ class SourcePath : public Path
 {
 public:
 	SourcePath(LPCWSTR sourcePath);
-	bool verify();
+	bool pre_copy_verify();
 };
 
