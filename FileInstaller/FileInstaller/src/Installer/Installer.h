@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "../Path/Path.h"
+#include "../Path/SourcePath/SourcePath.h"
+#include "../Path/DestinationPath/DestinationPath.h"
 
 class Installer {
 public:
@@ -14,6 +15,6 @@ private:
 	bool copy_file(Path* sourcePath);
 
 	bool _hasCreatedDestinationFolder;
-	std::vector<Path*> _sourcePaths;
-	Path* _destinationPath;
+	std::vector<SourcePath*> _sourcePaths;
+	DestinationPath* _destinationPath;
 };

@@ -1,8 +1,7 @@
 #include <windows.h>
 #include "Installer.h"
-#include "../Path/DestinationPath/DestinationPath.h"
-#include "../Path/SourcePath/SourcePath.h"
 
+// TODO: make singleton
 Installer::Installer() {
 	_destinationPath = new DestinationPath(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise");
 	_sourcePaths = {
@@ -17,14 +16,14 @@ Installer::Installer() {
 }
 
 void Installer::copy() {
-	if (!_destinationPath->verify()) {
+	if (!_destinationPath->tryCreate()) {
 		revert();
 	}
 
 	for (auto i = 0; i < _sourcePaths.size(); i++) {
-		Path* currentSourcePath = _sourcePaths.at(i);
+		SourcePath* currentSourcePath = _sourcePaths.at(i);
 		
-		if (!currentSourcePath->verify()) {
+		if (!currentSourcePath->pre_copy_verify()) {
 			revert();
 			return;
 		}
