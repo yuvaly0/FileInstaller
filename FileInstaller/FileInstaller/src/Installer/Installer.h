@@ -12,7 +12,6 @@ public:
 
 private:
 	void revert();
-	bool copy_file(Path* sourcePath);
 
 	bool _hasCreatedDestinationFolder;
 	std::vector<SourcePath*> _sourcePaths;
