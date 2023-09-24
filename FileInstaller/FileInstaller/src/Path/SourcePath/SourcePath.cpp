@@ -5,7 +5,7 @@
 
 SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {};
 
-bool SourcePath::copy_file(std::shared_ptr<DestinationPath> destinationPath) {
+void SourcePath::copy_file(std::shared_ptr<DestinationPath> destinationPath) {
 	LPCWSTR sourceFileName = PathFindFileName(_path);
 
 	// todo: read more if MAX_PATH is the ideal way
@@ -16,13 +16,13 @@ bool SourcePath::copy_file(std::shared_ptr<DestinationPath> destinationPath) {
 	
 	if (FAILED(ht)) {
 		// TOOD: log, couldn't create full destination path
-		return false;
+		throw std::exception();
 	}
 	
-	const BOOL result = CopyFileExW(_path, destinationFilePath, NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
+	const int result = CopyFileExW(_path, destinationFilePath, NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
 	
 	if (result != 0) {
- 		return true;
+ 		return;
 	}
 
 	const DWORD copyFileError = GetLastError();
@@ -31,22 +31,20 @@ bool SourcePath::copy_file(std::shared_ptr<DestinationPath> destinationPath) {
 	{
 		case ERROR_FILE_NOT_FOUND:
 			// todo: log, source file not found
-			return false;
+			throw std::exception();
 
 		case ERROR_ACCESS_DENIED:
 			// TODO: log, could not copy file, not enough permissions (_path, destinationPath)
-			return false;
+			throw std::exception();
 
 		case ERROR_ENCRYPTION_FAILED:
 			// todo: log, could not copy encrypted files
-			return false;
+			throw std::exception();
 		case ERROR_FILE_EXISTS:
 			// todo: log, same file exists in destination directory
-			return false;
+			throw std::exception();
 		default:
 			// todo: handle unknown error
-			return false;
+			throw std::exception();
 	}
-
-	return false;
 }
