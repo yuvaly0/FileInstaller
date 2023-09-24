@@ -8,7 +8,6 @@
 DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath) {};
 
 DestinationPath::CopyResults DestinationPath::tryCreate() {
-	// TODO: we might get ERROR_CANCELLED and it's ok, check REMARKS
 	const int isSuccess = SHCreateDirectoryExW(NULL, _path, NULL);
 
 	if (isSuccess == ERROR_SUCCESS) {
@@ -18,7 +17,11 @@ DestinationPath::CopyResults DestinationPath::tryCreate() {
 	// TODO: add parameter to the exception and level (error, info)
 	const DWORD createDirectoryError = GetLastError();
 	
-	if (createDirectoryError == ERROR_FILE_EXISTS || createDirectoryError == ERROR_ALREADY_EXISTS) {
+	if (createDirectoryError == ERROR_FILE_EXISTS || 
+		createDirectoryError == ERROR_ALREADY_EXISTS ||
+		// the directory created but one or more of the intermediate folders do not exist
+		createDirectoryError == ERROR_CANCELLED
+		) {
 		return DestinationPath::DIDNT_CREATE_DIRECTORY;
 	}
 
