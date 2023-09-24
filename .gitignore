@@ -4,3 +4,6 @@ FileInstaller/.vs/
 # build files
 FileInstaller/FileInstaller/x64
 FileInstaller/x64
+
+# ide files
+FileInstaller/enc_temp_folder

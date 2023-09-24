@@ -56,3 +56,7 @@ bool DestinationPath::tryCreate() {
 
 	return true;
 }
+
+LPCWSTR DestinationPath::getPath() {
+	return _path;
+}
