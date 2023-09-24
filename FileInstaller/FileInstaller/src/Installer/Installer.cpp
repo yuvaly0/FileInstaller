@@ -18,6 +18,7 @@ void Installer::copy() {
 		DestinationPath::CopyResults result = _destinationPath->tryCreate();
 
 		if (result == DestinationPath::CREATED_DIRECTORY) {
+			_logger.push_back("created directory successfully");
 			_rollbackHandler->add_action(std::make_unique<CreatedDirRollbackAction>(_destinationPath->_path));
 		}
 
