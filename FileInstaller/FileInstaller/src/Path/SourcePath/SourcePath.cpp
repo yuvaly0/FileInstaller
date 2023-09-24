@@ -35,6 +35,11 @@ bool SourcePath::copy_file(DestinationPath* destinationPath) {
 		// TODO: log, could not copy file, not enough permissions (_path, destinationPath)
 		return false;
 	}
-	
+
+	if (copyFileError == ERROR_ENCRYPTION_FAILED) {
+		// todo: log, could not copy encrypted files
+		return false;
+	}
+
 	return true;
 }
