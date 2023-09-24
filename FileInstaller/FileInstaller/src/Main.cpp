@@ -1,8 +1,7 @@
-#include <iostream>
+#include <memory>
 #include "./Installer/Installer.h"
 
 int main() {
-	// TODO: unique_ptr
-	Installer* installer = new Installer();
+	std::unique_ptr<Installer> installer = std::make_unique<Installer>();
 	installer->copy();
 }
