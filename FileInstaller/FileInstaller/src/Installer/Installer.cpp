@@ -2,10 +2,11 @@
 #include <memory>
 #include "Installer.h"
 #include "../Rollback/Actions/CopiedFile/CopiedFileAction.h"
+#include "../Rollback/Actions/CreatedDirRollbackAction/CreatedDirRollbackAction.h"
 
 // TODO: make singleton
 Installer::Installer() {
-	_destinationPath = new DestinationPath(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise");
+	_destinationPath = new DestinationPath(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe2");
 	_sourcePaths = {
 		new SourcePath(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\1.txt"),
 		new SourcePath(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\10.txt")
@@ -15,8 +16,14 @@ Installer::Installer() {
 }
 
 void Installer::copy() {
-	if (!_destinationPath->tryCreate()) {
-		_rollbackHandler->rollback();
+	DestinationPath::SuccessResults result = _destinationPath->tryCreate();
+	
+	if (result == DestinationPath::TEMP) {
+		return;
+	}
+
+	if (result == DestinationPath::CREATED_DIRECTORY) {
+		_rollbackHandler->add_action(new CreatedDirRollbackAction(_destinationPath->_path));
 	}
 	
 

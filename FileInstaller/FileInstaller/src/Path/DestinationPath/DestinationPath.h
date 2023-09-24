@@ -7,6 +7,12 @@ class DestinationPath : public Path
 public:
 	DestinationPath(LPCWSTR destinationPath);
 
-	bool tryCreate();
+	enum SuccessResults {
+		CREATED_DIRECTORY = 1,
+		DIDNT_CREATE_DIRECTORY,
+		TEMP
+	};
+
+	SuccessResults tryCreate();
 };
 
