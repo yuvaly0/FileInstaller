@@ -21,11 +21,16 @@ bool SourcePath::copy_file(DestinationPath* destinationPath) {
 	const BOOL result = CopyFileExW(_path, destinationFilePath, NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
 	
 	if (result != 0) {
-		return true;
+ 		return true;
 	}
 
 	const DWORD copyFileError = GetLastError();
 	
+	if (copyFileError == ERROR_FILE_NOT_FOUND) {
+		// todo: log, source file not found
+		return false;
+	}
+
 	if (copyFileError == ERROR_ACCESS_DENIED) {
 		// TODO: log, could not copy file, not enough permissions (_path, destinationPath)
 		return false;
