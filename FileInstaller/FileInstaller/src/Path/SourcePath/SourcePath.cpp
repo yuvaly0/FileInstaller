@@ -8,6 +8,7 @@ SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {};
 bool SourcePath::copy_file(DestinationPath* destinationPath) {
 	LPCWSTR sourceFileName = PathFindFileName(_path);
 
+	// todo: read more if MAX_PATH is the ideal way
 	wchar_t destinationFilePath[MAX_PATH] = L""; 
 	HRESULT ht = StringCchCatW(destinationFilePath, MAX_PATH, (LPWSTR)destinationPath->getPath());
 	ht = StringCchCatW(destinationFilePath, MAX_PATH, L"\\");
@@ -25,26 +26,27 @@ bool SourcePath::copy_file(DestinationPath* destinationPath) {
 	}
 
 	const DWORD copyFileError = GetLastError();
-	
-	if (copyFileError == ERROR_FILE_NOT_FOUND) {
-		// todo: log, source file not found
-		return false;
+
+	switch (copyFileError) 
+	{
+		case ERROR_FILE_NOT_FOUND:
+			// todo: log, source file not found
+			return false;
+
+		case ERROR_ACCESS_DENIED:
+			// TODO: log, could not copy file, not enough permissions (_path, destinationPath)
+			return false;
+
+		case ERROR_ENCRYPTION_FAILED:
+			// todo: log, could not copy encrypted files
+			return false;
+		case ERROR_FILE_EXISTS:
+			// todo: log, same file exists in destination directory
+			return false;
+		default:
+			// todo: handle unknown error
+			return false;
 	}
 
-	if (copyFileError == ERROR_ACCESS_DENIED) {
-		// TODO: log, could not copy file, not enough permissions (_path, destinationPath)
-		return false;
-	}
-
-	if (copyFileError == ERROR_ENCRYPTION_FAILED) {
-		// todo: log, could not copy encrypted files
-		return false;
-	}
-
-	if (copyFileError == ERROR_FILE_EXISTS) {
-		// todo: log, same file exists in destination directory
-		return false;
-	}
-	
-	return true;
+	return false;
 }
