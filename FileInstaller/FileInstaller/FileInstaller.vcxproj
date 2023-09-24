@@ -129,6 +129,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Rollback\Actions\CopiedFile\CopiedFile.cpp" />
+    <ClCompile Include="src\Rollback\Actions\RollbackAction.cpp" />
+    <ClCompile Include="src\Rollback\RollbackHandler.cpp" />
     <ClCompile Include="src\Path\Path.cpp" />
     <ClCompile Include="src\Path\SourcePath\SourcePath.cpp" />
     <ClCompile Include="src\Path\DestinationPath\DestinationPath.cpp" />
@@ -136,6 +139,9 @@
     <ClCompile Include="src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Rollback\Actions\CopiedFile\CopiedFile.h" />
+    <ClInclude Include="src\Rollback\Actions\RollbackAction.h" />
+    <ClInclude Include="src\Rollback\RollbackHandler.h" />
     <ClInclude Include="src\Path\Path.h" />
     <ClInclude Include="src\Path\SourcePath\SourcePath.h" />
     <ClInclude Include="src\Path\DestinationPath\DestinationPath.h" />
