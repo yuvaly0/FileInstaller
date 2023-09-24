@@ -1,14 +1,15 @@
 #pragma once
 #include <vector>
+#include <memory>
 #include "./Actions/RollbackAction.h"
 
 class RollbackHandler
 {
 public:
 	void rollback();
-	void add_action(RollbackAction* action);
+	void add_action(std::unique_ptr<RollbackAction> rollbackAction);
 
 private:
-	std::vector<RollbackAction*> _rollbackActions;
+	std::vector<std::unique_ptr<RollbackAction>> _rollbackActions;
 };
 

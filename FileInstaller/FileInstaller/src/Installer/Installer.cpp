@@ -5,7 +5,7 @@
 #include "../Rollback/Actions/CreatedDirRollbackAction/CreatedDirRollbackAction.h"
 
 // TODO: make singleton
-Installer::Installer(DestinationPath* destinationPath, std::vector<SourcePath*> sourcePaths)
+Installer::Installer(std::shared_ptr<DestinationPath> destinationPath, std::vector<std::shared_ptr<SourcePath>> sourcePaths)
 	: _destinationPath(destinationPath), _sourcePaths(sourcePaths) {
 	
 	_rollbackHandler = std::make_unique<RollbackHandler>();
@@ -16,18 +16,18 @@ void Installer::copy() {
 		DestinationPath::SuccessResults result = _destinationPath->tryCreate();
 
 		if (result == DestinationPath::CREATED_DIRECTORY) {
-			_rollbackHandler->add_action(new CreatedDirRollbackAction(_destinationPath->_path));
+			_rollbackHandler->add_action(std::make_unique<CreatedDirRollbackAction>(_destinationPath->_path));
 		}
 
 		for (auto i = 0; i < _sourcePaths.size(); i++) {
-			SourcePath* currentSourcePath = _sourcePaths.at(i);
+			std::shared_ptr<SourcePath> currentSourcePath = _sourcePaths.at(i);
 
 			if (!currentSourcePath->copy_file(_destinationPath)) {
 				_rollbackHandler->rollback();
 				return;
 			}
 
-			_rollbackHandler->add_action(new CopiedFileAction(currentSourcePath->_path, _destinationPath->_path));
+			_rollbackHandler->add_action(std::make_unique<CopiedFileAction>(currentSourcePath->_path, _destinationPath->_path));
 		}
 	}
 	catch (...) {

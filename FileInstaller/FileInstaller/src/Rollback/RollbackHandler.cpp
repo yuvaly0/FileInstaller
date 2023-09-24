@@ -6,6 +6,6 @@ void RollbackHandler::rollback() {
 	}
 }
 
-void RollbackHandler::add_action(RollbackAction* action) {
-	_rollbackActions.push_back(action);
+void RollbackHandler::add_action(std::unique_ptr<RollbackAction> rollbackAction) {
+	_rollbackActions.push_back(std::move(rollbackAction));
 }
