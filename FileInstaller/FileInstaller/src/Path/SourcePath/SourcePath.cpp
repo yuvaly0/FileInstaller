@@ -41,5 +41,10 @@ bool SourcePath::copy_file(DestinationPath* destinationPath) {
 		return false;
 	}
 
+	if (copyFileError == ERROR_FILE_EXISTS) {
+		// todo: log, same file exists in destination directory
+		return false;
+	}
+	
 	return true;
 }
