@@ -7,7 +7,7 @@
 
 class Installer {
 public:
-	Installer();
+	Installer(DestinationPath* destinationPath, std::vector<SourcePath*> sourcePaths);
 
 	void copy();
 

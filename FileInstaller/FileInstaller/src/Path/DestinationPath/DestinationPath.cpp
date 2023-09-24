@@ -7,8 +7,6 @@
 DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath) {};
 
 DestinationPath::SuccessResults DestinationPath::tryCreate() {
-	DWORD destinationFileAttributes = GetFileAttributes(_path);
-
 	// TODO: refactor return logic to exceptions instead of false and log in the installer
 	// TODO: we might get ERROR_CANCELLED and it's ok, check REMARKS
 	const int isSuccess = SHCreateDirectoryExW(NULL, _path, NULL);
