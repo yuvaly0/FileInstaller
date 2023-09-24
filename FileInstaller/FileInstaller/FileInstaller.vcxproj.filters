@@ -36,7 +36,7 @@
     <ClCompile Include="src\Rollback\Actions\RollbackAction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rollback\Actions\CopiedFile\CopiedFile.cpp">
+    <ClCompile Include="src\Rollback\Actions\CopiedFile\CopiedFileAction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,7 +59,7 @@
     <ClInclude Include="src\Rollback\Actions\RollbackAction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rollback\Actions\CopiedFile\CopiedFile.h">
+    <ClInclude Include="src\Rollback\Actions\CopiedFile\CopiedFileAction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

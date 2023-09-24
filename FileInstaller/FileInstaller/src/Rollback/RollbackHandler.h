@@ -6,9 +6,9 @@ class RollbackHandler
 {
 public:
 	void rollback();
-	void add_action();
+	void add_action(RollbackAction* action);
 
 private:
-	std::vector<RollbackAction*> rollbackActions;
+	std::vector<RollbackAction*> _rollbackActions;
 };
 

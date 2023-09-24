@@ -7,7 +7,6 @@ class DestinationPath : public Path
 public:
 	DestinationPath(LPCWSTR destinationPath);
 
-	LPCWSTR getPath();
 	bool tryCreate();
 };
 

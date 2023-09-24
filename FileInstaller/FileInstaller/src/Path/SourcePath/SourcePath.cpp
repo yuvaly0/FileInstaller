@@ -10,7 +10,7 @@ bool SourcePath::copy_file(DestinationPath* destinationPath) {
 
 	// todo: read more if MAX_PATH is the ideal way
 	wchar_t destinationFilePath[MAX_PATH] = L""; 
-	HRESULT ht = StringCchCatW(destinationFilePath, MAX_PATH, (LPWSTR)destinationPath->getPath());
+	HRESULT ht = StringCchCatW(destinationFilePath, MAX_PATH, (LPWSTR)destinationPath->_path);
 	ht = StringCchCatW(destinationFilePath, MAX_PATH, L"\\");
 	ht = StringCchCatW(destinationFilePath, MAX_PATH, sourceFileName);
 	

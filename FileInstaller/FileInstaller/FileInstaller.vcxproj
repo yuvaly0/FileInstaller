@@ -129,7 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Rollback\Actions\CopiedFile\CopiedFile.cpp" />
+    <ClCompile Include="src\Rollback\Actions\CopiedFile\CopiedFileAction.cpp" />
     <ClCompile Include="src\Rollback\Actions\RollbackAction.cpp" />
     <ClCompile Include="src\Rollback\RollbackHandler.cpp" />
     <ClCompile Include="src\Path\Path.cpp" />
@@ -139,7 +139,7 @@
     <ClCompile Include="src\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Rollback\Actions\CopiedFile\CopiedFile.h" />
+    <ClInclude Include="src\Rollback\Actions\CopiedFile\CopiedFileAction.h" />
     <ClInclude Include="src\Rollback\Actions\RollbackAction.h" />
     <ClInclude Include="src\Rollback\RollbackHandler.h" />
     <ClInclude Include="src\Path\Path.h" />
