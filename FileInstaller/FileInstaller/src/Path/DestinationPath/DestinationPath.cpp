@@ -1,6 +1,7 @@
 #include <iostream>
 #include <ShlObj_core.h>
 #include <Shlwapi.h>
+#include <stdexcept>
 #include "DestinationPath.h"
 
 DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath) {};
@@ -23,12 +24,16 @@ DestinationPath::SuccessResults DestinationPath::tryCreate() {
 
 	if (createDirectoryError == ERROR_PATH_NOT_FOUND) {
 		// TODO: log, location is not reachable or malformed or exceeds range (_path)
-		return DestinationPath::TEMP;
+		throw std::exception();
 	}
 
 	if (createDirectoryError == ERROR_FILENAME_EXCED_RANGE) {
 		// TODO: log, folder name exceeds range
-		return DestinationPath::TEMP;
+		throw std::exception();
+	}
+
+	if (createDirectoryError == ERROR_ACCESS_DENIED) {
+		throw std::exception();
 	}
 
 	if (createDirectoryError == ERROR_BAD_PATHNAME) {
@@ -37,7 +42,7 @@ DestinationPath::SuccessResults DestinationPath::tryCreate() {
 
 		if (!isPathRelative) {
 			// TODO: log, invalid or malformed absolute path
-			return DestinationPath::TEMP;
+			throw std::exception();
 		}
 		
 		WCHAR absolutePath[MAX_PATH];
@@ -48,12 +53,12 @@ DestinationPath::SuccessResults DestinationPath::tryCreate() {
 
 			if (getFullPathNameError == ERROR_INVALID_PARAMETER) {
 				// TODO: log, invalid or malformed relative (_path)
-				return DestinationPath::TEMP;
+				throw std::exception();
 			}
 		}
 
 		_path = std::move(absolutePath);
 	}
 
-	return DestinationPath::TEMP;
+	throw std::exception();
 }

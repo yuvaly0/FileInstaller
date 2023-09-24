@@ -9,8 +9,7 @@ public:
 
 	enum SuccessResults {
 		CREATED_DIRECTORY = 1,
-		DIDNT_CREATE_DIRECTORY,
-		TEMP
+		DIDNT_CREATE_DIRECTORY
 	};
 
 	SuccessResults tryCreate();

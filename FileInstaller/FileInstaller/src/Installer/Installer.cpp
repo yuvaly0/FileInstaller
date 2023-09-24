@@ -16,25 +16,25 @@ Installer::Installer() {
 }
 
 void Installer::copy() {
-	DestinationPath::SuccessResults result = _destinationPath->tryCreate();
-	
-	if (result == DestinationPath::TEMP) {
-		return;
-	}
+	try {
+		DestinationPath::SuccessResults result = _destinationPath->tryCreate();
 
-	if (result == DestinationPath::CREATED_DIRECTORY) {
-		_rollbackHandler->add_action(new CreatedDirRollbackAction(_destinationPath->_path));
-	}
-	
-
-	for (auto i = 0; i < _sourcePaths.size(); i++) {
-		SourcePath* currentSourcePath = _sourcePaths.at(i);
-		
-		if (!currentSourcePath->copy_file(_destinationPath)) {
-			_rollbackHandler->rollback();
-			return;
+		if (result == DestinationPath::CREATED_DIRECTORY) {
+			_rollbackHandler->add_action(new CreatedDirRollbackAction(_destinationPath->_path));
 		}
 
-		_rollbackHandler->add_action(new CopiedFileAction(currentSourcePath->_path, _destinationPath->_path));
+		for (auto i = 0; i < _sourcePaths.size(); i++) {
+			SourcePath* currentSourcePath = _sourcePaths.at(i);
+
+			if (!currentSourcePath->copy_file(_destinationPath)) {
+				_rollbackHandler->rollback();
+				return;
+			}
+
+			_rollbackHandler->add_action(new CopiedFileAction(currentSourcePath->_path, _destinationPath->_path));
+		}
+	}
+	catch (...) {
+		_rollbackHandler->rollback();
 	}
 }
