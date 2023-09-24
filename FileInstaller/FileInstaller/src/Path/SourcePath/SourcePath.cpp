@@ -1,24 +1,17 @@
 #include <windows.h>
 #include "strsafe.h"
+#include "shlwapi.h"
 #include "SourcePath.h"
-
-/*
-int get_file_name(LPCWSTR filePath) {
-	const int filePathLength = lstrlenW(filePath);
-
-	for (int i = filePathLength - 1; i >= 0; i--) {
-		if (lstrcmpiW("\\", filePathLength - 1 - 1))
-	}
-}
-*/
 
 SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {};
 
 bool SourcePath::copy_file(DestinationPath* destinationPath) {
-	// LPCWSTR sourceFileName = StrChrW(L"..............", (WCHAR)".");
+	LPCWSTR sourceFileName = PathFindFileName(_path);
+
 	wchar_t destinationFilePath[MAX_PATH] = L""; 
 	HRESULT ht = StringCchCatW(destinationFilePath, MAX_PATH, (LPWSTR)destinationPath->getPath());
-	ht = StringCchCatW(destinationFilePath, MAX_PATH, L"\\1.txt");
+	ht = StringCchCatW(destinationFilePath, MAX_PATH, L"\\");
+	ht = StringCchCatW(destinationFilePath, MAX_PATH, sourceFileName);
 	
 	if (FAILED(ht)) {
 		// TOOD: log, couldn't create full destination path
