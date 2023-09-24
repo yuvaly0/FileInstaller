@@ -1,33 +1,39 @@
 #include <iostream>
 #include <ShlObj_core.h>
 #include <Shlwapi.h>
+#include <stdexcept>
 #include "DestinationPath.h"
 
 DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath) {};
 
-bool DestinationPath::tryCreate() {
+DestinationPath::SuccessResults DestinationPath::tryCreate() {
 	DWORD destinationFileAttributes = GetFileAttributes(_path);
 
+	// TODO: refactor return logic to exceptions instead of false and log in the installer
 	// TODO: we might get ERROR_CANCELLED and it's ok, check REMARKS
-	// TODO: first go recursively over the path to know where we should rollback if needed
 	const int isSuccess = SHCreateDirectoryExW(NULL, _path, NULL);
 	if (isSuccess == ERROR_SUCCESS) {
-		return true;
+		return DestinationPath::CREATED_DIRECTORY;
 	}
 
+	// TODO: refactor to switch case to handle default
 	const DWORD createDirectoryError = GetLastError();
 	if (createDirectoryError == ERROR_FILE_EXISTS || createDirectoryError == ERROR_ALREADY_EXISTS) {
-		return true;
+		return DestinationPath::DIDNT_CREATE_DIRECTORY;
 	}
 
 	if (createDirectoryError == ERROR_PATH_NOT_FOUND) {
 		// TODO: log, location is not reachable or malformed or exceeds range (_path)
-		return false;
+		throw std::exception();
 	}
 
 	if (createDirectoryError == ERROR_FILENAME_EXCED_RANGE) {
 		// TODO: log, folder name exceeds range
-		return false;
+		throw std::exception();
+	}
+
+	if (createDirectoryError == ERROR_ACCESS_DENIED) {
+		throw std::exception();
 	}
 
 	if (createDirectoryError == ERROR_BAD_PATHNAME) {
@@ -36,7 +42,7 @@ bool DestinationPath::tryCreate() {
 
 		if (!isPathRelative) {
 			// TODO: log, invalid or malformed absolute path
-			return false;
+			throw std::exception();
 		}
 		
 		WCHAR absolutePath[MAX_PATH];
@@ -47,16 +53,12 @@ bool DestinationPath::tryCreate() {
 
 			if (getFullPathNameError == ERROR_INVALID_PARAMETER) {
 				// TODO: log, invalid or malformed relative (_path)
-				return false;
+				throw std::exception();
 			}
 		}
 
 		_path = std::move(absolutePath);
 	}
 
-	return true;
-}
-
-LPCWSTR DestinationPath::getPath() {
-	return _path;
+	throw std::exception();
 }
