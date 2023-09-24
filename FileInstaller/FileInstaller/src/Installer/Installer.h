@@ -7,12 +7,12 @@
 
 class Installer {
 public:
-	Installer(DestinationPath* destinationPath, std::vector<std::shared_ptr<SourcePath>> sourcePaths);
+	Installer(std::shared_ptr<DestinationPath> destinationPath, std::vector<std::shared_ptr<SourcePath>> sourcePaths);
 
 	void copy();
 
 private:
 	std::vector<std::shared_ptr<SourcePath>> _sourcePaths;
-	DestinationPath* _destinationPath;
+	std::shared_ptr<DestinationPath> _destinationPath;
 	std::unique_ptr<RollbackHandler> _rollbackHandler;
 };

@@ -5,7 +5,7 @@
 
 SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {};
 
-bool SourcePath::copy_file(DestinationPath* destinationPath) {
+bool SourcePath::copy_file(std::shared_ptr<DestinationPath> destinationPath) {
 	LPCWSTR sourceFileName = PathFindFileName(_path);
 
 	// todo: read more if MAX_PATH is the ideal way
