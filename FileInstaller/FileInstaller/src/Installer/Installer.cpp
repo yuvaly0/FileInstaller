@@ -9,6 +9,7 @@ Installer::Installer(std::shared_ptr<DestinationPath> destinationPath, std::vect
 	: _destinationPath(destinationPath), _sourcePaths(sourcePaths) {
 	
 	_rollbackHandler = std::make_unique<RollbackHandler>();
+	_logger = {};
 }
 
 void Installer::copy() {

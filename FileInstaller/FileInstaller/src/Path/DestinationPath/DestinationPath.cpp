@@ -3,6 +3,7 @@
 #include <Shlwapi.h>
 #include <stdexcept>
 #include "DestinationPath.h"
+#include "../../Exceptions/InstallerException.h"
 
 DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath) {};
 
@@ -15,23 +16,22 @@ DestinationPath::SuccessResults DestinationPath::tryCreate() {
 	}
 
 	// TODO: refactor to switch case to handle default
+	// TODO: add parameter to the exception and level (error, info)
 	const DWORD createDirectoryError = GetLastError();
 	if (createDirectoryError == ERROR_FILE_EXISTS || createDirectoryError == ERROR_ALREADY_EXISTS) {
 		return DestinationPath::DIDNT_CREATE_DIRECTORY;
 	}
 
 	if (createDirectoryError == ERROR_PATH_NOT_FOUND) {
-		// TODO: log, location is not reachable or malformed or exceeds range (_path)
-		throw std::exception();
+		throw InstallerException("could not create directory, not reachable or malformed");
 	}
 
 	if (createDirectoryError == ERROR_FILENAME_EXCED_RANGE) {
-		// TODO: log, folder name exceeds range
-		throw std::exception();
+		throw InstallerException("could not create directory, folder name exceeds range");
 	}
 
 	if (createDirectoryError == ERROR_ACCESS_DENIED) {
-		throw std::exception();
+		throw InstallerException("could not create directory, not enough premissions");
 	}
 
 	if (createDirectoryError == ERROR_BAD_PATHNAME) {
@@ -39,8 +39,7 @@ DestinationPath::SuccessResults DestinationPath::tryCreate() {
 		bool isPathRelative = PathIsRelativeW(_path);
 
 		if (!isPathRelative) {
-			// TODO: log, invalid or malformed absolute path
-			throw std::exception();
+			throw InstallerException("could not create directory, invalid or malformed absolute path");
 		}
 		
 		WCHAR absolutePath[MAX_PATH];
@@ -50,13 +49,12 @@ DestinationPath::SuccessResults DestinationPath::tryCreate() {
 			const DWORD getFullPathNameError = GetLastError();
 
 			if (getFullPathNameError == ERROR_INVALID_PARAMETER) {
-				// TODO: log, invalid or malformed relative (_path)
-				throw std::exception();
+				throw InstallerException("could not create directory, invalid or malformed relative path");
 			}
 		}
 
 		_path = std::move(absolutePath);
 	}
 
-	throw std::exception();
+	throw InstallerException("could not create directory, unknown error");
 }

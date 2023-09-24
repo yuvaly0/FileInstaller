@@ -42,6 +42,9 @@
     <ClCompile Include="src\Rollback\Actions\CreatedDirRollbackAction\CreatedDirRollbackAction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Installer\Exceptions\InstallerException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Installer\Installer.h">
@@ -66,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Rollback\Actions\CreatedDirRollbackAction\CreatedDirRollbackAction.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Installer\Exceptions\InstallerException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
