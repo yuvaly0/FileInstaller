@@ -3,6 +3,7 @@
 #include "Installer.h"
 #include "../Rollback/Actions/CopiedFile/CopiedFileAction.h"
 #include "../Rollback/Actions/CreatedDirRollbackAction/CreatedDirRollbackAction.h"
+#include "../Exceptions/InstallerException.h"
 
 // TODO: make singleton
 Installer::Installer(std::shared_ptr<DestinationPath> destinationPath, std::vector<std::shared_ptr<SourcePath>> sourcePaths)
@@ -14,7 +15,7 @@ Installer::Installer(std::shared_ptr<DestinationPath> destinationPath, std::vect
 
 void Installer::copy() {
 	try {
-		DestinationPath::SuccessResults result = _destinationPath->tryCreate();
+		DestinationPath::CopyResults result = _destinationPath->tryCreate();
 
 		if (result == DestinationPath::CREATED_DIRECTORY) {
 			_rollbackHandler->add_action(std::make_unique<CreatedDirRollbackAction>(_destinationPath->_path));
@@ -27,7 +28,15 @@ void Installer::copy() {
 			_rollbackHandler->add_action(std::make_unique<CopiedFileAction>(currentSourcePath->_path, _destinationPath->_path));
 		}
 	}
-	catch (...) {
-		_rollbackHandler->rollback();
+	catch (InstallerException exception) {
+		_logger.push_back(exception.what());
 	}
+	catch (std::exception e) {
+		_logger.push_back(e.what());
+	}
+	catch (...) {
+		_logger.push_back("unknown error");
+	}
+	
+	_rollbackHandler->rollback();
 }
