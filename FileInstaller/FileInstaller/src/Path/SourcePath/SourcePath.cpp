@@ -2,6 +2,7 @@
 #include "strsafe.h"
 #include "shlwapi.h"
 #include "SourcePath.h"
+#include "../../Exceptions/InstallerException.h"
 
 SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {};
 
@@ -15,8 +16,7 @@ void SourcePath::copy_file(std::shared_ptr<DestinationPath> destinationPath) {
 	ht = StringCchCatW(destinationFilePath, MAX_PATH, sourceFileName);
 	
 	if (FAILED(ht)) {
-		// TOOD: log, couldn't create full destination path
-		throw std::exception();
+		throw InstallerException("couldn't copy file, file path exceeded max size");
 	}
 	
 	const int result = CopyFileExW(_path, destinationFilePath, NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
@@ -27,24 +27,26 @@ void SourcePath::copy_file(std::shared_ptr<DestinationPath> destinationPath) {
 
 	const DWORD copyFileError = GetLastError();
 
-	switch (copyFileError) 
+	switch (copyFileError)
 	{
-		case ERROR_FILE_NOT_FOUND:
-			// todo: log, source file not found
-			throw std::exception();
+		case ERROR_FILE_NOT_FOUND: {
+			throw InstallerException("couldn't copy file, file not found");
+		}
+			
+		case ERROR_ACCESS_DENIED: {
+			throw InstallerException("couldn't copy file, not enough permissions");
+		}
+			
+		case ERROR_ENCRYPTION_FAILED: {
+			throw InstallerException("couldn't copy encrypted file");
+		}
 
-		case ERROR_ACCESS_DENIED:
-			// TODO: log, could not copy file, not enough permissions (_path, destinationPath)
-			throw std::exception();
-
-		case ERROR_ENCRYPTION_FAILED:
-			// todo: log, could not copy encrypted files
-			throw std::exception();
-		case ERROR_FILE_EXISTS:
-			// todo: log, same file exists in destination directory
-			throw std::exception();
-		default:
-			// todo: handle unknown error
-			throw std::exception();
-	}
+		case ERROR_FILE_EXISTS: {
+			throw InstallerException("couldn't copy file, exists in destination directory");
+		}
+			
+		default: {
+			throw InstallerException("couldn't copy file, unkown error");
+		}
+	}		
 }
