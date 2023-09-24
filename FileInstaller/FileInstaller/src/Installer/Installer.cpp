@@ -5,7 +5,7 @@
 #include "../Rollback/Actions/CreatedDirRollbackAction/CreatedDirRollbackAction.h"
 
 // TODO: make singleton
-Installer::Installer(DestinationPath* destinationPath, std::vector<SourcePath*> sourcePaths)
+Installer::Installer(DestinationPath* destinationPath, std::vector<std::shared_ptr<SourcePath>> sourcePaths)
 	: _destinationPath(destinationPath), _sourcePaths(sourcePaths) {
 	
 	_rollbackHandler = std::make_unique<RollbackHandler>();
@@ -20,7 +20,7 @@ void Installer::copy() {
 		}
 
 		for (auto i = 0; i < _sourcePaths.size(); i++) {
-			SourcePath* currentSourcePath = _sourcePaths.at(i);
+			std::shared_ptr<SourcePath> currentSourcePath = _sourcePaths.at(i);
 
 			if (!currentSourcePath->copy_file(_destinationPath)) {
 				_rollbackHandler->rollback();
