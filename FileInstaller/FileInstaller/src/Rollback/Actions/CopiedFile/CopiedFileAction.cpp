@@ -12,7 +12,7 @@ void CopiedFileAction::rollback() {
 	// no need to check return value, we've done this before and it works
 	wchar_t destinationFilePath[MAX_PATH] = L"";
 	StringCchCatW(destinationFilePath, MAX_PATH, (LPWSTR)_destionationPath);
-	StringCchCatW(destinationFilePath, MAX_PATH, L"\\");
+	PathAddBackslashW(destinationFilePath);
 	StringCchCatW(destinationFilePath, MAX_PATH, sourceFileName);
 
 	DeleteFileW(destinationFilePath);

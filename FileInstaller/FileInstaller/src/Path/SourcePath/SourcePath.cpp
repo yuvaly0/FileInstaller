@@ -12,9 +12,9 @@ void SourcePath::copy_file(std::shared_ptr<DestinationPath> destinationPath) {
 	// todo: read more if MAX_PATH is the ideal way
 	wchar_t destinationFilePath[MAX_PATH] = L""; 
 	HRESULT ht = StringCchCatW(destinationFilePath, MAX_PATH, (LPWSTR)destinationPath->_path);
-	ht = StringCchCatW(destinationFilePath, MAX_PATH, L"\\");
+	PathAddBackslashW(destinationFilePath);
 	ht = StringCchCatW(destinationFilePath, MAX_PATH, sourceFileName);
-	
+
 	if (FAILED(ht)) {
 		throw InstallerException("couldn't copy file, file path exceeded max size");
 	}
