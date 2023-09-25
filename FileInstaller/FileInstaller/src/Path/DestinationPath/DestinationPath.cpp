@@ -56,8 +56,10 @@ DestinationPath::CopyResults DestinationPath::tryCreate() {
 				}
 			}
 
-			// todo: check if works
+			// todo: add 'relative' to the log?
 			_path = absolutePath;
+			auto result = tryCreate();
+			return result;
 		}
 
 		default: {
