@@ -16,7 +16,7 @@ void SourcePath::copy_file(std::shared_ptr<DestinationPath> destinationPath) {
 	ht = StringCchCatW(destinationFilePath, MAX_PATH, sourceFileName);
 
 	if (FAILED(ht)) {
-		throw InstallerException("couldn't copy file, file path exceeded max size");
+		throw InstallerException("couldn't copy file, file path exceeded max size, check to allocate greater path size");
 	}
 	
 	const int result = CopyFileExW(_path, destinationFilePath, NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
