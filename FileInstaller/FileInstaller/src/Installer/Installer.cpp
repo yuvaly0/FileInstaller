@@ -24,7 +24,7 @@ void Installer::copy() {
 
 		for (auto i = 0; i < _sourcePaths.size(); i++) {
 			std::shared_ptr<SourcePath> currentSourcePath = _sourcePaths.at(i);
-			currentSourcePath->copy_file(_destinationPath);
+			currentSourcePath->copy_path(_destinationPath);
 
 			_rollbackHandler->add_action(std::make_unique<CopiedFileAction>(currentSourcePath->_path, _destinationPath->_path));
 		}
