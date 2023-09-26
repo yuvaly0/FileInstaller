@@ -10,7 +10,7 @@ public:
 	void copy_path(std::shared_ptr<DestinationPath> destinationPath);
 
 private:
-	void copy_file(std::unique_ptr<wchar_t[]> destinationFilePath);
+	void copy_file(LPCWSTR destinationPath);
 	void copy_directory(LPCWSTR destinationFilePath);
 };
 

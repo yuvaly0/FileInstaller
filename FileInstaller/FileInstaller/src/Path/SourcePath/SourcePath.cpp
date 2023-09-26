@@ -6,7 +6,13 @@
 
 SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {};
 
-void SourcePath::copy_file(std::unique_ptr<wchar_t[]> destinationFilePath) {
+void SourcePath::copy_file(LPCWSTR destinationPath) {
+	std::unique_ptr<wchar_t[]> destinationFilePath = Utils::getDestinationFilePath(destinationPath, _path);
+
+	if (!destinationFilePath) {
+		throw InstallerException("couldn't copy file, file path exceeded max size, check to allocate greater path size");
+	}
+
 	const int result = CopyFileExW(_path, destinationFilePath.get(), NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
 
 	if (result != 0) {
@@ -94,12 +100,6 @@ void SourcePath::copy_directory(LPCWSTR destinationFilePath) {
 }
 
 void SourcePath::copy_path(std::shared_ptr<DestinationPath> destinationPath) {
-	std::unique_ptr<wchar_t[]> destinationFilePath = Utils::getDestinationFilePath(destinationPath->_path, _path);
-
-	if (!destinationFilePath) {
-		throw InstallerException("couldn't copy file, file path exceeded max size, check to allocate greater path size");
-	}
-
 	const DWORD fileAttributes = GetFileAttributesW(_path);
 	
 	if (fileAttributes == INVALID_FILE_ATTRIBUTES) {
@@ -111,6 +111,6 @@ void SourcePath::copy_path(std::shared_ptr<DestinationPath> destinationPath) {
 		copy_directory(destinationPath->_path);
 	}
 	else {
-		copy_file(std::move(destinationFilePath));
+		copy_file(destinationPath->_path);
 	}
 }
