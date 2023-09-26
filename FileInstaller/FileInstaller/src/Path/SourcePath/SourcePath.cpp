@@ -1,3 +1,5 @@
+#include <ShObjIdl.h>
+#include "atlbase.h"
 #include "SourcePath.h"
 #include "../../Exceptions/InstallerException.h"
 #include "../../Utils/Utils.h"
@@ -37,6 +39,60 @@ void SourcePath::copy_file(std::unique_ptr<wchar_t[]> destinationFilePath) {
 	}
 }
 
+void SourcePath::copy_directory(LPCWSTR destinationFilePath) {
+	auto initializeComResult = CoInitialize(NULL);
+
+	if (FAILED(initializeComResult)) {
+		throw InstallerException("couldn't initiailze COM");
+	}
+
+	try {
+		CComPtr<IFileOperation> fileOperation = NULL;
+		HRESULT hr = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
+
+		if (FAILED(hr)) {
+			throw InstallerException("couldn't create instance of IFileOperation");
+		}
+
+		CComPtr<IShellItem> pFrom = NULL;
+		CComPtr<IShellItem> pTo = NULL;
+		auto sourceShellCreationResult = SHCreateItemFromParsingName(_path, NULL, IID_PPV_ARGS(&pFrom));
+		auto toShellCreationResult = SHCreateItemFromParsingName(destinationFilePath, NULL, IID_PPV_ARGS(&pTo));
+
+		if (FAILED(sourceShellCreationResult) || FAILED(toShellCreationResult)) {
+			throw InstallerException("couldn't create shell items paths");
+		}
+
+		auto setFlagsResult = fileOperation->SetOperationFlags(FOFX_REQUIREELEVATION | FOF_SILENT);
+
+		if (FAILED(setFlagsResult)) {
+			throw InstallerException("couldn't set flags on IFileOperation");
+		}
+
+		auto copyItemResult = fileOperation->CopyItem(pFrom, pTo, L"blabla", NULL);
+
+		if (FAILED(copyItemResult)) {
+			throw InstallerException("failed queuing the copy operation");
+		}
+
+		auto performOperationsResult = fileOperation->PerformOperations();
+
+		if (FAILED(performOperationsResult)) {
+			throw InstallerException("failed performing actual copying");
+		}
+
+	}
+	catch (InstallerException e) {
+		CoUninitialize();
+		throw e;
+	}
+	catch (...) {
+		CoUninitialize();
+	}
+
+	CoUninitialize();
+}
+
 void SourcePath::copy_path(std::shared_ptr<DestinationPath> destinationPath) {
 	std::unique_ptr<wchar_t[]> destinationFilePath = Utils::getDestinationFilePath(destinationPath->_path, _path);
 
@@ -52,8 +108,7 @@ void SourcePath::copy_path(std::shared_ptr<DestinationPath> destinationPath) {
 	}
 
 	if (fileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-		const int a = 1;
-		// handle directory
+		copy_directory(destinationPath->_path);
 	}
 	else {
 		copy_file(std::move(destinationFilePath));

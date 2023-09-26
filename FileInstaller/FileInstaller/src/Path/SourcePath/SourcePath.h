@@ -11,6 +11,6 @@ public:
 
 private:
 	void copy_file(std::unique_ptr<wchar_t[]> destinationFilePath);
-	void copy_directory();
+	void copy_directory(LPCWSTR destinationFilePath);
 };
 
