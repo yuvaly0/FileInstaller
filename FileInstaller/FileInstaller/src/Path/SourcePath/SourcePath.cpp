@@ -4,7 +4,9 @@
 #include "../../Exceptions/InstallerException.h"
 #include "../../Utils/Utils.h"
 
-SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {};
+SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {
+	_isDirectory = NULL;
+};
 
 void SourcePath::copy_file(LPCWSTR destinationPath) {
 	std::unique_ptr<wchar_t[]> destinationFilePath = Utils::getDestinationFilePath(destinationPath, _path);
@@ -46,6 +48,12 @@ void SourcePath::copy_file(LPCWSTR destinationPath) {
 }
 
 void SourcePath::copy_directory(LPCWSTR destinationFilePath) {
+	const DWORD fileAttributes = GetFileAttributesW(destinationFilePath);
+
+	if (fileAttributes != INVALID_FILE_ATTRIBUTES) {
+		throw InstallerException("cannot copy directory, already exists in the destination");
+	}
+
 	auto initializeComResult = CoInitialize(NULL);
 
 	if (FAILED(initializeComResult)) {
@@ -54,9 +62,9 @@ void SourcePath::copy_directory(LPCWSTR destinationFilePath) {
 
 	try {
 		CComPtr<IFileOperation> fileOperation = NULL;
-		HRESULT hr = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
+		HRESULT createFileOperationResult = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
 
-		if (FAILED(hr)) {
+		if (FAILED(createFileOperationResult)) {
 			throw InstallerException("couldn't create instance of IFileOperation");
 		}
 
@@ -69,13 +77,13 @@ void SourcePath::copy_directory(LPCWSTR destinationFilePath) {
 			throw InstallerException("couldn't create shell items paths");
 		}
 
-		auto setFlagsResult = fileOperation->SetOperationFlags(FOFX_REQUIREELEVATION | FOF_SILENT);
+		auto setFlagsResult = fileOperation->SetOperationFlags(FOFX_REQUIREELEVATION | FOF_SILENT | FOFX_EARLYFAILURE | FOF_NOERRORUI);
 
 		if (FAILED(setFlagsResult)) {
 			throw InstallerException("couldn't set flags on IFileOperation");
 		}
 
-		auto copyItemResult = fileOperation->CopyItem(pFrom, pTo, L"blabla", NULL);
+		auto copyItemResult = fileOperation->CopyItem(pFrom, pTo, NULL, NULL);
 
 		if (FAILED(copyItemResult)) {
 			throw InstallerException("failed queuing the copy operation");
@@ -108,9 +116,11 @@ void SourcePath::copy_path(std::shared_ptr<DestinationPath> destinationPath) {
 	}
 
 	if (fileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+		_isDirectory = true;
 		copy_directory(destinationPath->_path);
 	}
 	else {
+		_isDirectory = false;
 		copy_file(destinationPath->_path);
 	}
 }

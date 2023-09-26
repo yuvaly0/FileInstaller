@@ -45,7 +45,10 @@
     <ClCompile Include="src\Exceptions\InstallerException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Utils.cpp">
+    <ClCompile Include="src\Utils\Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rollback\Actions\CopiedDirRollbackAction\CopiedDirRollbackAction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -77,7 +80,10 @@
     <ClInclude Include="src\Exceptions\InstallerException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utils.h">
+    <ClInclude Include="src\Utils\Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rollback\Actions\CopiedDirRollbackAction\CopiedDirRollbackAction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
