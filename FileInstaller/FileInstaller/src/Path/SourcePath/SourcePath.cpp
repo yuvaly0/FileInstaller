@@ -1,6 +1,6 @@
 #include "SourcePath.h"
 #include "../../Exceptions/InstallerException.h"
-#include "../../Utils.h"
+#include "../../Utils/Utils.h"
 
 SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {};
 

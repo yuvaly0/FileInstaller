@@ -139,7 +139,7 @@
     <ClCompile Include="src\Path\DestinationPath\DestinationPath.cpp" />
     <ClCompile Include="src\Installer\Installer.cpp" />
     <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\Utils.cpp" />
+    <ClCompile Include="src\Utils\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Exceptions\InstallerException.h" />
@@ -151,7 +151,7 @@
     <ClInclude Include="src\Path\SourcePath\SourcePath.h" />
     <ClInclude Include="src\Path\DestinationPath\DestinationPath.h" />
     <ClInclude Include="src\Installer\Installer.h" />
-    <ClInclude Include="src\Utils.h" />
+    <ClInclude Include="src\Utils\Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
