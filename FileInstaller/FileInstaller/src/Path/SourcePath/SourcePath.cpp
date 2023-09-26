@@ -8,14 +8,8 @@ SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {
 	_isDirectory = NULL;
 };
 
-void SourcePath::copy_file(LPCWSTR destinationPath) {
-	std::unique_ptr<wchar_t[]> destinationFilePath = Utils::getDestinationFilePath(destinationPath, _path);
-
-	if (!destinationFilePath) {
-		throw InstallerException("couldn't copy file, file path exceeded max size, check to allocate greater path size");
-	}
-
-	const int result = CopyFileExW(_path, destinationFilePath.get(), NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
+void SourcePath::copy_file(std::unique_ptr<wchar_t[]> destinationPath) {
+	const int result = CopyFileExW(_path, destinationPath.get(), NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
 
 	if (result != 0) {
 		return;
@@ -47,8 +41,8 @@ void SourcePath::copy_file(LPCWSTR destinationPath) {
 	}
 }
 
-void SourcePath::copy_directory(LPCWSTR destinationFilePath) {
-	const DWORD fileAttributes = GetFileAttributesW(destinationFilePath);
+void SourcePath::copy_directory(LPCWSTR destinationPathParent, std::unique_ptr<wchar_t[]> destinationFilePath) {
+	const DWORD fileAttributes = GetFileAttributesW(destinationFilePath.get());
 
 	if (fileAttributes != INVALID_FILE_ATTRIBUTES) {
 		throw InstallerException("cannot copy directory, already exists in the destination");
@@ -71,7 +65,7 @@ void SourcePath::copy_directory(LPCWSTR destinationFilePath) {
 		CComPtr<IShellItem> pFrom = NULL;
 		CComPtr<IShellItem> pTo = NULL;
 		auto sourceShellCreationResult = SHCreateItemFromParsingName(_path, NULL, IID_PPV_ARGS(&pFrom));
-		auto toShellCreationResult = SHCreateItemFromParsingName(destinationFilePath, NULL, IID_PPV_ARGS(&pTo));
+		auto toShellCreationResult = SHCreateItemFromParsingName(destinationPathParent, NULL, IID_PPV_ARGS(&pTo));
 
 		if (FAILED(sourceShellCreationResult) || FAILED(toShellCreationResult)) {
 			throw InstallerException("couldn't create shell items paths");
@@ -101,6 +95,7 @@ void SourcePath::copy_directory(LPCWSTR destinationFilePath) {
 		throw e;
 	}
 	catch (...) {
+		// todo: could call this twice
 		CoUninitialize();
 	}
 
@@ -115,12 +110,18 @@ void SourcePath::copy_path(std::shared_ptr<DestinationPath> destinationPath) {
 		throw InstallerException("couldn't copy file, could not get file attributes");
 	}
 
+	std::unique_ptr<wchar_t[]> destinationFilePath = Utils::getDestinationFilePath(destinationPath->_path, _path);
+
+	if (!destinationFilePath) {
+		throw InstallerException("couldn't copy file, file path exceeded max size, check to allocate greater path size");
+	}
+
 	if (fileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 		_isDirectory = true;
-		copy_directory(destinationPath->_path);
+		copy_directory(destinationPath->_path, std::move(destinationFilePath));
 	}
 	else {
 		_isDirectory = false;
-		copy_file(destinationPath->_path);
+		copy_file(std::move(destinationFilePath));
 	}
 }

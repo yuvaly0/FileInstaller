@@ -11,7 +11,7 @@ public:
 
 	bool _isDirectory;
 private:
-	void copy_file(LPCWSTR destinationPath);
-	void copy_directory(LPCWSTR destinationFilePath);
+	void copy_file(std::unique_ptr<wchar_t[]> destinationPath);
+	void copy_directory(LPCWSTR destinationPathParent, std::unique_ptr<wchar_t[]> destinationFilePath);
 };
 
