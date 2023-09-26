@@ -28,6 +28,8 @@ void Installer::copy() {
 
 			_rollbackHandler->add_action(std::make_unique<CopiedFileAction>(currentSourcePath->_path, _destinationPath->_path));
 		}
+
+		return;
 	}
 	catch (InstallerException exception) {
 		_logger.push_back(exception.what());
