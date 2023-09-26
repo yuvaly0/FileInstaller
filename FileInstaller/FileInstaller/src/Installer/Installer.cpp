@@ -14,6 +14,23 @@ Installer::Installer(std::shared_ptr<DestinationPath> destinationPath, std::vect
 	_logger = {};
 }
 
+void Installer::rollback() {
+	_logger.push_back("starting rollback");
+
+	try {
+		_rollbackHandler->rollback();
+	}
+	catch (InstallerException exception) {
+		_logger.push_back(exception.what());
+	}
+	catch (std::exception e) {
+		_logger.push_back(e.what());
+	}
+	catch (...) {
+		_logger.push_back("unknown error");
+	}
+}
+
 void Installer::copy() {
 	try {
 		DestinationPath::CopyResults result = _destinationPath->tryCreate();
@@ -48,18 +65,5 @@ void Installer::copy() {
 		_logger.push_back("unknown error");
 	}
 	
-	_logger.push_back("starting rollback");
-
-	try {
-		_rollbackHandler->rollback();
-	}
-	catch (InstallerException exception) {
-		_logger.push_back(exception.what());
-	}
-	catch (std::exception e) {
-		_logger.push_back(e.what());
-	}
-	catch (...) {
-		_logger.push_back("unknown error");
-	}
+	rollback();
 }
