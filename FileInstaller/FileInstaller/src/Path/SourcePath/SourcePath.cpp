@@ -3,7 +3,6 @@
 #include "SourcePath.h"
 #include "../../Exceptions/InstallerException.h"
 #include "../../Utils/Utils.h"
-#include <iostream>
 
 SourcePath::SourcePath(LPCWSTR sourcePath, LPCWSTR destinationPath) : Path(sourcePath) {
 	_sourcePath = sourcePath;
@@ -28,24 +27,11 @@ SourcePath::SourcePath(LPCWSTR sourcePath, LPCWSTR destinationPath) : Path(sourc
 		if (destinationFilePathAttributes != INVALID_FILE_ATTRIBUTES) {
 			throw InstallerException("cannot copy directory, already exists in the destination");
 		}
-
-		auto initializeComResult = CoInitialize(NULL);
-
-		if (FAILED(initializeComResult)) {
-			throw InstallerException("couldn't initiailze COM");
-		}
 	}
 	else {
 		_isDirectory = false;
 	}
 };
-
-SourcePath::~SourcePath() {
-	std::cout << "SourcePath dtor" << std::endl;
-	if (_isDirectory) {
-		CoUninitialize();
-	}
-}
 
 void SourcePath::copy_file() {
 	const int result = CopyFileExW(_sourcePath, _destinationFilePath.get(), NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);

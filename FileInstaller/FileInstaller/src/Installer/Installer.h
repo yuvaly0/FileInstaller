@@ -8,6 +8,7 @@
 class Installer {
 public:
 	Installer(std::shared_ptr<DestinationPath> destinationPath, std::vector<std::shared_ptr<SourcePath>> sourcePaths);
+	~Installer();
 
 	void copy();
 

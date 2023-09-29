@@ -7,7 +7,6 @@ class SourcePath : public Path
 {
 public:
 	SourcePath(LPCWSTR sourcePath, LPCWSTR destinationPath);
-	~SourcePath();
 
 	void copy_path(std::shared_ptr<DestinationPath> destinationPath);
 

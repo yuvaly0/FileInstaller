@@ -6,12 +6,21 @@
 #include "../Rollback/Actions/CopiedDirRollbackAction/CopiedDirRollbackAction.h"
 #include "../Exceptions/InstallerException.h"
 
-// TODO: make singleton
 Installer::Installer(std::shared_ptr<DestinationPath> destinationPath, std::vector<std::shared_ptr<SourcePath>> sourcePaths)
 	: _destinationPath(destinationPath), _sourcePaths(sourcePaths) {
 	
 	_rollbackHandler = std::make_unique<RollbackHandler>();
 	_logger = {};
+
+	auto initializeComResult = CoInitialize(NULL);
+
+	if (FAILED(initializeComResult)) {
+		throw InstallerException("couldn't initiailze COM");
+	}
+}
+
+Installer::~Installer() {
+	CoUninitialize();
 }
 
 void Installer::rollback() {
