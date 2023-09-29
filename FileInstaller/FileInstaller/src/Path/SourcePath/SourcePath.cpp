@@ -76,7 +76,7 @@ void SourcePath::copy_directory() {
 
 	CComPtr<IShellItem> pFrom = NULL;
 	CComPtr<IShellItem> pTo = NULL;
-	auto sourceShellCreationResult = SHCreateItemFromParsingName(_path, NULL, IID_PPV_ARGS(&pFrom));
+	auto sourceShellCreationResult = SHCreateItemFromParsingName(_sourcePath, NULL, IID_PPV_ARGS(&pFrom));
 	auto toShellCreationResult = SHCreateItemFromParsingName(_destinationPath, NULL, IID_PPV_ARGS(&pTo));
 
 	if (FAILED(sourceShellCreationResult) || FAILED(toShellCreationResult)) {
