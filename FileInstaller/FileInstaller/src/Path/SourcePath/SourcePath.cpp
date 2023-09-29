@@ -3,13 +3,52 @@
 #include "SourcePath.h"
 #include "../../Exceptions/InstallerException.h"
 #include "../../Utils/Utils.h"
+#include <iostream>
 
-SourcePath::SourcePath(LPCWSTR sourcePath) : Path(sourcePath) {
-	_isDirectory = NULL;
+SourcePath::SourcePath(LPCWSTR sourcePath, LPCWSTR destinationPath) : Path(sourcePath) {
+	_sourcePath = sourcePath;
+	_destinationPath = destinationPath;
+	_destinationFilePath = Utils::getDestinationFilePath(destinationPath, sourcePath);
+
+	if (!_destinationFilePath) {
+		throw InstallerException("couldn't copy path, exceeded max size, check to allocate greater path size");
+	}
+
+	const DWORD sourcePathAttributes = GetFileAttributesW(_sourcePath);
+
+	if (sourcePathAttributes == INVALID_FILE_ATTRIBUTES) {
+		throw InstallerException("couldn't copy path, could not get attributes");
+	}
+
+	if (sourcePathAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+		_isDirectory = true;
+
+		const DWORD destinationFilePathAttributes = GetFileAttributesW(_destinationFilePath.get());
+
+		if (destinationFilePathAttributes != INVALID_FILE_ATTRIBUTES) {
+			throw InstallerException("cannot copy directory, already exists in the destination");
+		}
+
+		auto initializeComResult = CoInitialize(NULL);
+
+		if (FAILED(initializeComResult)) {
+			throw InstallerException("couldn't initiailze COM");
+		}
+	}
+	else {
+		_isDirectory = false;
+	}
 };
 
-void SourcePath::copy_file(std::unique_ptr<wchar_t[]> destinationPath) {
-	const int result = CopyFileExW(_path, destinationPath.get(), NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
+SourcePath::~SourcePath() {
+	std::cout << "SourcePath dtor" << std::endl;
+	if (_isDirectory) {
+		CoUninitialize();
+	}
+}
+
+void SourcePath::copy_file() {
+	const int result = CopyFileExW(_sourcePath, _destinationFilePath.get(), NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
 
 	if (result != 0) {
 		return;
@@ -41,87 +80,47 @@ void SourcePath::copy_file(std::unique_ptr<wchar_t[]> destinationPath) {
 	}
 }
 
-void SourcePath::copy_directory(LPCWSTR destinationPathParent, std::unique_ptr<wchar_t[]> destinationFilePath) {
-	const DWORD fileAttributes = GetFileAttributesW(destinationFilePath.get());
+void SourcePath::copy_directory() {
+	CComPtr<IFileOperation> fileOperation = NULL;
+	HRESULT createFileOperationResult = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
 
-	if (fileAttributes != INVALID_FILE_ATTRIBUTES) {
-		throw InstallerException("cannot copy directory, already exists in the destination");
+	if (FAILED(createFileOperationResult)) {
+		throw InstallerException("couldn't create instance of IFileOperation");
 	}
 
-	auto initializeComResult = CoInitialize(NULL);
+	CComPtr<IShellItem> pFrom = NULL;
+	CComPtr<IShellItem> pTo = NULL;
+	auto sourceShellCreationResult = SHCreateItemFromParsingName(_path, NULL, IID_PPV_ARGS(&pFrom));
+	auto toShellCreationResult = SHCreateItemFromParsingName(_destinationPath, NULL, IID_PPV_ARGS(&pTo));
 
-	if (FAILED(initializeComResult)) {
-		throw InstallerException("couldn't initiailze COM");
+	if (FAILED(sourceShellCreationResult) || FAILED(toShellCreationResult)) {
+		throw InstallerException("couldn't create shell items paths");
 	}
 
-	try {
-		CComPtr<IFileOperation> fileOperation = NULL;
-		HRESULT createFileOperationResult = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
+	auto setFlagsResult = fileOperation->SetOperationFlags(FOFX_REQUIREELEVATION | FOF_SILENT | FOFX_EARLYFAILURE | FOF_NOERRORUI);
 
-		if (FAILED(createFileOperationResult)) {
-			throw InstallerException("couldn't create instance of IFileOperation");
-		}
-
-		CComPtr<IShellItem> pFrom = NULL;
-		CComPtr<IShellItem> pTo = NULL;
-		auto sourceShellCreationResult = SHCreateItemFromParsingName(_path, NULL, IID_PPV_ARGS(&pFrom));
-		auto toShellCreationResult = SHCreateItemFromParsingName(destinationPathParent, NULL, IID_PPV_ARGS(&pTo));
-
-		if (FAILED(sourceShellCreationResult) || FAILED(toShellCreationResult)) {
-			throw InstallerException("couldn't create shell items paths");
-		}
-
-		auto setFlagsResult = fileOperation->SetOperationFlags(FOFX_REQUIREELEVATION | FOF_SILENT | FOFX_EARLYFAILURE | FOF_NOERRORUI);
-
-		if (FAILED(setFlagsResult)) {
-			throw InstallerException("couldn't set flags on IFileOperation");
-		}
-
-		auto copyItemResult = fileOperation->CopyItem(pFrom, pTo, NULL, NULL);
-
-		if (FAILED(copyItemResult)) {
-			throw InstallerException("failed queuing the copy operation");
-		}
-
-		auto performOperationsResult = fileOperation->PerformOperations();
-
-		if (FAILED(performOperationsResult)) {
-			throw InstallerException("failed performing actual copying");
-		}
-
-	}
-	catch (InstallerException e) {
-		CoUninitialize();
-		throw e;
-	}
-	catch (...) {
-		// todo: could call this twice
-		CoUninitialize();
+	if (FAILED(setFlagsResult)) {
+		throw InstallerException("couldn't set flags on IFileOperation");
 	}
 
-	CoUninitialize();
+	auto copyItemResult = fileOperation->CopyItem(pFrom, pTo, NULL, NULL);
+
+	if (FAILED(copyItemResult)) {
+		throw InstallerException("failed queuing the copy operation");
+	}
+
+	auto performOperationsResult = fileOperation->PerformOperations();
+
+	if (FAILED(performOperationsResult)) {
+		throw InstallerException("failed performing actual copying");
+	}
 }
 
 void SourcePath::copy_path(std::shared_ptr<DestinationPath> destinationPath) {
-	const DWORD fileAttributes = GetFileAttributesW(_path);
-	
-	if (fileAttributes == INVALID_FILE_ATTRIBUTES) {
-		DWORD a = GetLastError();
-		throw InstallerException("couldn't copy file, could not get file attributes");
-	}
-
-	std::unique_ptr<wchar_t[]> destinationFilePath = Utils::getDestinationFilePath(destinationPath->_path, _path);
-
-	if (!destinationFilePath) {
-		throw InstallerException("couldn't copy file, file path exceeded max size, check to allocate greater path size");
-	}
-
-	if (fileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-		_isDirectory = true;
-		copy_directory(destinationPath->_path, std::move(destinationFilePath));
+	if (_isDirectory) {
+		copy_directory();
 	}
 	else {
-		_isDirectory = false;
-		copy_file(std::move(destinationFilePath));
+		copy_file();
 	}
 }

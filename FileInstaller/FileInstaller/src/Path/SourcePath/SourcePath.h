@@ -6,12 +6,18 @@
 class SourcePath : public Path
 {
 public:
-	SourcePath(LPCWSTR sourcePath);
+	SourcePath(LPCWSTR sourcePath, LPCWSTR destinationPath);
+	~SourcePath();
+
 	void copy_path(std::shared_ptr<DestinationPath> destinationPath);
 
 	bool _isDirectory;
 private:
-	void copy_file(std::unique_ptr<wchar_t[]> destinationPath);
-	void copy_directory(LPCWSTR destinationPathParent, std::unique_ptr<wchar_t[]> destinationFilePath);
+	void copy_file();
+	void copy_directory();
+
+	std::unique_ptr<wchar_t[]> _destinationFilePath;
+	LPCWSTR _destinationPath;
+	LPCWSTR _sourcePath;
 };
 
