@@ -13,8 +13,6 @@ public:
 	void copy();
 
 private:
-	void rollback();
-
 	std::vector<std::shared_ptr<CopyPathAction>> _sourcePaths;
 	std::shared_ptr<CreateDirectoryAction> _destinationPath;
 	std::unique_ptr<RollbackHandler> _rollbackHandler;

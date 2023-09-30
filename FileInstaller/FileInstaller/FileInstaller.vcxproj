@@ -130,11 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Actions\Action.cpp" />
-    <ClCompile Include="src\Rollback\Actions\CopiedDirRollbackAction\CopiedDirRollbackAction.cpp" />
     <ClCompile Include="src\Exceptions\InstallerException.cpp" />
-    <ClCompile Include="src\Rollback\Actions\CreatedDirRollbackAction\CreatedDirRollbackAction.cpp" />
-    <ClCompile Include="src\Rollback\Actions\CopiedFile\CopiedFileAction.cpp" />
-    <ClCompile Include="src\Rollback\Actions\RollbackAction.cpp" />
     <ClCompile Include="src\Rollback\RollbackHandler.cpp" />
     <ClCompile Include="src\Actions\CopyPathAction\CopyPathAction.cpp" />
     <ClCompile Include="src\Actions\CreateDirectoryAction\CreateDirectoryAction.cpp" />
@@ -144,11 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Actions\Action.h" />
-    <ClInclude Include="src\Rollback\Actions\CopiedDirRollbackAction\CopiedDirRollbackAction.h" />
     <ClInclude Include="src\Exceptions\InstallerException.h" />
-    <ClInclude Include="src\Rollback\Actions\CreatedDirRollbackAction\CreatedDirRollbackAction.h" />
-    <ClInclude Include="src\Rollback\Actions\CopiedFile\CopiedFileAction.h" />
-    <ClInclude Include="src\Rollback\Actions\RollbackAction.h" />
     <ClInclude Include="src\Rollback\RollbackHandler.h" />
     <ClInclude Include="src\Actions\CopyPathAction\CopyPathAction.h" />
     <ClInclude Include="src\Actions\CreateDirectoryAction\CreateDirectoryAction.h" />

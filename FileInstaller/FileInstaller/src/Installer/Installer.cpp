@@ -1,9 +1,6 @@
 #include <windows.h>
 #include <memory>
 #include "Installer.h"
-#include "../Rollback/Actions/CopiedFile/CopiedFileAction.h"
-#include "../Rollback/Actions/CreatedDirRollbackAction/CreatedDirRollbackAction.h"
-#include "../Rollback/Actions/CopiedDirRollbackAction/CopiedDirRollbackAction.h"
 #include "../Exceptions/InstallerException.h"
 
 Installer::Installer(LPCWSTR destinationPath, std::vector<LPCWSTR> sourcePaths) {
@@ -39,23 +36,6 @@ Installer::~Installer() {
 	}
 
 	CoUninitialize();
-}
-
-void Installer::rollback() {
-	_logger.push_back("starting rollback");
-
-	try {
-		_rollbackHandler->rollback();
-	}
-	catch (InstallerException exception) {
-		_logger.push_back(exception.what());
-	}
-	catch (std::exception e) {
-		_logger.push_back(e.what());
-	}
-	catch (...) {
-		_logger.push_back("unknown error");
-	}
 }
 
 void Installer::copy() {
