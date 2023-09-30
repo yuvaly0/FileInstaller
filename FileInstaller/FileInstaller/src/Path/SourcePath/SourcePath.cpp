@@ -4,7 +4,7 @@
 #include "../../Exceptions/InstallerException.h"
 #include "../../Utils/Utils.h"
 
-SourcePath::SourcePath(LPCWSTR sourcePath, std::shared_ptr<wchar_t[]> destinationPath) : Path(sourcePath) {
+SourcePath::SourcePath(LPCWSTR sourcePath, std::shared_ptr<wchar_t[]> destinationPath) {
 	_sourcePath = sourcePath;
 	_destinationPath = destinationPath;
 	_destinationFilePath = Utils::getDestinationFilePath(destinationPath.get(), sourcePath);

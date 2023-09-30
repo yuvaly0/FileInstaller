@@ -3,7 +3,7 @@
 #include "../Path.h"
 #include "../DestinationPath/DestinationPath.h"
 
-class SourcePath : public Path
+class SourcePath
 {
 public:
 	SourcePath(LPCWSTR sourcePath, std::shared_ptr<wchar_t[]> destinationPath);

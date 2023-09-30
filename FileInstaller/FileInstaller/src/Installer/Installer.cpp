@@ -55,10 +55,10 @@ void Installer::copy() {
 			_logger.push_back("successfully copied path");
 
 			if (currentSourcePath->_isDirectory) {
-				_rollbackHandler->add_action(std::make_unique<CopiedDirRollbackAction>(currentSourcePath->_path, _destinationPath->_path));
+				_rollbackHandler->add_action(std::make_unique<CopiedDirRollbackAction>(currentSourcePath->_sourcePath, _destinationPath->_path));
 			}
 			else {
-				_rollbackHandler->add_action(std::make_unique<CopiedFileAction>(currentSourcePath->_path, _destinationPath->_path));
+				_rollbackHandler->add_action(std::make_unique<CopiedFileAction>(currentSourcePath->_sourcePath, _destinationPath->_path));
 			}
 		}
 
