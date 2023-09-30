@@ -30,7 +30,7 @@ CreateDirectoryAction::CreateDirectoryAction(LPCWSTR destinationPath) {
 			throw InstallerException("Could not initialize destinationPath");
 		}
 	}
-};
+}
 
 CreateDirectoryAction::CopyResults CreateDirectoryAction::tryCreate() {
 	const int isSuccess = SHCreateDirectoryExW(NULL, _path.get(), NULL);

@@ -13,7 +13,7 @@ Installer::Installer(LPCWSTR destinationPath, std::vector<LPCWSTR> sourcePaths) 
 		_destinationPath = std::make_shared<CreateDirectoryAction>(destinationPath);
 
 		for (auto sourcePath : sourcePaths) {
-			_sourcePaths.emplace_back(std::make_shared<SourcePath>(sourcePath, _destinationPath->_path));
+			_sourcePaths.emplace_back(std::make_shared<CopyPathAction>(sourcePath, _destinationPath->_path));
 		}
 	}
 	catch (InstallerException e) {
@@ -34,6 +34,10 @@ Installer::Installer(LPCWSTR destinationPath, std::vector<LPCWSTR> sourcePaths) 
 }
 
 Installer::~Installer() {
+	if (_shouldRollback) {
+		_rollbackHandler->rollback();
+	}
+
 	CoUninitialize();
 }
 
@@ -60,19 +64,14 @@ void Installer::copy() {
 
 		if (result == CreateDirectoryAction::CREATED_DIRECTORY) {
 			_logger.push_back("created directory successfully");
-			_rollbackHandler->add_action(std::make_unique<CreatedDirRollbackAction>(_destinationPath->_path));
+			//_rollbackHandler->add_action(std::make_unique<CreatedDirRollbackAction>(_destinationPath->_path));
 		}
 
 		for (auto currentSourcePath : _sourcePaths) {
-			currentSourcePath->copy_path(_destinationPath);
+			currentSourcePath->copy(_destinationPath);
 			_logger.push_back("successfully copied path");
 
-			if (currentSourcePath->_isDirectory) {
-				_rollbackHandler->add_action(std::make_unique<CopiedDirRollbackAction>(currentSourcePath->_sourcePath, _destinationPath->_path));
-			}
-			else {
-				_rollbackHandler->add_action(std::make_unique<CopiedFileAction>(currentSourcePath->_sourcePath, _destinationPath->_path));
-			}
+			_rollbackHandler->add_action(currentSourcePath);
 		}
 
 		return;
@@ -87,5 +86,5 @@ void Installer::copy() {
 		_logger.push_back("unknown error");
 	}
 	
-	rollback();
+	_shouldRollback = true;
 }

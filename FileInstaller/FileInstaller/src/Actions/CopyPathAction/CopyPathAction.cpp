@@ -1,13 +1,16 @@
 #include <ShObjIdl.h>
 #include "atlbase.h"
-#include "SourcePath.h"
+#include "CopyPathAction.h"
 #include "../../Exceptions/InstallerException.h"
 #include "../../Utils/Utils.h"
 
-SourcePath::SourcePath(LPCWSTR sourcePath, std::shared_ptr<wchar_t[]> destinationPath) {
+CopyPathAction::CopyPathAction(LPCWSTR sourcePath, std::shared_ptr<wchar_t[]> destinationPath) : Action() {
 	_sourcePath = sourcePath;
 	_destinationPath = destinationPath;
-	_destinationFilePath = Utils::getDestinationFilePath(destinationPath.get(), sourcePath);
+};
+
+void CopyPathAction::initialize() {
+	_destinationFilePath = Utils::getDestinationFilePath(_destinationPath.get(), _sourcePath);
 
 	if (!_destinationFilePath) {
 		throw InstallerException("couldn't copy path, exceeded max size, check to allocate greater path size");
@@ -31,9 +34,9 @@ SourcePath::SourcePath(LPCWSTR sourcePath, std::shared_ptr<wchar_t[]> destinatio
 	else {
 		_isDirectory = false;
 	}
-};
+}
 
-void SourcePath::copy_file() {
+void CopyPathAction::copy_file() {
 	const int result = CopyFileExW(_sourcePath, _destinationFilePath.get(), NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
 
 	if (result != 0) {
@@ -66,7 +69,7 @@ void SourcePath::copy_file() {
 	}
 }
 
-void SourcePath::copy_directory() {
+void CopyPathAction::copy_directory() {
 	CComPtr<IFileOperation> fileOperation = NULL;
 	HRESULT createFileOperationResult = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
 
@@ -103,11 +106,61 @@ void SourcePath::copy_directory() {
 	}
 }
 
-void SourcePath::copy_path(std::shared_ptr<CreateDirectoryAction> destinationPath) {
+void CopyPathAction::copy(std::shared_ptr<CreateDirectoryAction> destinationPath) {
+	initialize();
+
 	if (_isDirectory) {
 		copy_directory();
 	}
 	else {
 		copy_file();
+	}
+}
+
+void CopyPathAction::rollback_copy_directory() {
+	CComPtr<IFileOperation> fileOperation = NULL;
+	HRESULT createFileOperationResult = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
+
+	if (FAILED(createFileOperationResult)) {
+		throw InstallerException("couldn't create instance of IFileOperation");
+	}
+
+	CComPtr<IShellItem> deleteDirShellItem = NULL;
+	auto deleteDirShellResult = SHCreateItemFromParsingName(_destinationFilePath.get(), NULL, IID_PPV_ARGS(&deleteDirShellItem));
+
+	if (FAILED(deleteDirShellResult)) {
+		throw InstallerException("couldn't create destination file path shell item");
+	}
+
+	auto setFlagsResult = fileOperation->SetOperationFlags(FOFX_REQUIREELEVATION | FOF_SILENT);
+
+	if (FAILED(setFlagsResult)) {
+		throw InstallerException("couldn't set flags on IFileOperation");
+	}
+
+	auto deleteItemResult = fileOperation->DeleteItem(deleteDirShellItem, NULL);
+
+	if (FAILED(deleteItemResult)) {
+		throw InstallerException("failed queuing delete operation");
+	}
+
+	auto performOperationsResult = fileOperation->PerformOperations();
+
+	if (FAILED(performOperationsResult)) {
+		throw InstallerException("failed performing actual deletion");
+	}
+
+}
+
+void CopyPathAction::rollback_copy_file() {
+	DeleteFileW(_destinationFilePath.get());
+}
+
+void CopyPathAction::rollback() {
+	if (_isDirectory) {
+		rollback_copy_directory();
+	}
+	else {
+		rollback_copy_file();
 	}
 }

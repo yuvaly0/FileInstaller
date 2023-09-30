@@ -3,7 +3,7 @@
 #include <vector>
 #include "../Rollback/RollbackHandler.h"
 #include "../Actions/CreateDirectoryAction/CreateDirectoryAction.h"
-#include "../Actions/SourcePath/SourcePath.h"
+#include "../Actions/CopyPathAction/CopyPathAction.h"
 
 class Installer {
 public:
@@ -15,7 +15,7 @@ public:
 private:
 	void rollback();
 
-	std::vector<std::shared_ptr<SourcePath>> _sourcePaths;
+	std::vector<std::shared_ptr<CopyPathAction>> _sourcePaths;
 	std::shared_ptr<CreateDirectoryAction> _destinationPath;
 	std::unique_ptr<RollbackHandler> _rollbackHandler;
 	std::vector<std::string> _logger;
