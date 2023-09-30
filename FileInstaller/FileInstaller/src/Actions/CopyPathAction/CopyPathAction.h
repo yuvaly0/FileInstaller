@@ -6,7 +6,7 @@
 class CopyPathAction : public Action 
 {
 public:
-	CopyPathAction(LPCWSTR sourcePath, std::shared_ptr<wchar_t[]> destinationPath);
+	CopyPathAction(LPCWSTR sourcePath, LPCWSTR destinationPath);
 
 	void act() override;
 	void rollback() override;
@@ -22,6 +22,6 @@ private:
 	void rollback_copy_directory();
 
 	std::unique_ptr<wchar_t[]> _destinationFilePath;
-	std::shared_ptr<wchar_t[]> _destinationPath;
+	LPCWSTR _destinationPath;
 };
 

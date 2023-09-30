@@ -4,13 +4,13 @@
 #include "../../Exceptions/InstallerException.h"
 #include "../../Utils/Utils.h"
 
-CopyPathAction::CopyPathAction(LPCWSTR sourcePath, std::shared_ptr<wchar_t[]> destinationPath) : Action() {
+CopyPathAction::CopyPathAction(LPCWSTR sourcePath, LPCWSTR destinationPath) : Action() {
 	_sourcePath = sourcePath;
 	_destinationPath = destinationPath;
 };
 
 void CopyPathAction::initialize() {
-	_destinationFilePath = Utils::getDestinationFilePath(_destinationPath.get(), _sourcePath);
+	_destinationFilePath = Utils::getDestinationFilePath(_destinationPath, _sourcePath);
 
 	if (!_destinationFilePath) {
 		throw InstallerException("couldn't copy path, exceeded max size, check to allocate greater path size");
@@ -81,7 +81,7 @@ void CopyPathAction::copy_directory() {
 	CComPtr<IShellItem> pFrom = NULL;
 	CComPtr<IShellItem> pTo = NULL;
 	auto sourceShellCreationResult = SHCreateItemFromParsingName(_sourcePath, NULL, IID_PPV_ARGS(&pFrom));
-	auto toShellCreationResult = SHCreateItemFromParsingName(_destinationPath.get(), NULL, IID_PPV_ARGS(&pTo));
+	auto toShellCreationResult = SHCreateItemFromParsingName(_destinationPath, NULL, IID_PPV_ARGS(&pTo));
 
 	if (FAILED(sourceShellCreationResult) || FAILED(toShellCreationResult)) {
 		throw InstallerException("couldn't create shell items paths");

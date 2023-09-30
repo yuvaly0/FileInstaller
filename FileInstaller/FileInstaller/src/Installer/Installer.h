@@ -7,14 +7,13 @@
 
 class Installer {
 public:
-	Installer(LPCWSTR destinationPath, std::vector<LPCWSTR> sourcePaths);
+	Installer(std::vector<std::shared_ptr<Action>> actions);
 	~Installer();
 
 	void copy();
 
 private:
-	std::vector<std::shared_ptr<CopyPathAction>> _sourcePaths;
-	std::shared_ptr<CreateDirectoryAction> _destinationPath;
+	std::vector<std::shared_ptr<Action>> _actions;
 	std::unique_ptr<RollbackHandler> _rollbackHandler;
 	std::vector<std::string> _logger;
 	bool _shouldRollback;

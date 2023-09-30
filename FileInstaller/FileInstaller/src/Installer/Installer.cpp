@@ -3,23 +3,11 @@
 #include "Installer.h"
 #include "../Exceptions/InstallerException.h"
 
-Installer::Installer(LPCWSTR destinationPath, std::vector<LPCWSTR> sourcePaths) {
+#define GET_CLASS_NAME(x) #x
+
+Installer::Installer(std::vector<std::shared_ptr<Action>> actions) {
+	_actions = actions;
 	_logger = {};
-
-	try {
-		_destinationPath = std::make_shared<CreateDirectoryAction>(destinationPath);
-
-		for (auto sourcePath : sourcePaths) {
-			_sourcePaths.emplace_back(std::make_shared<CopyPathAction>(sourcePath, _destinationPath->_path));
-		}
-	}
-	catch (InstallerException e) {
-		_logger.push_back(e.what());
-		throw e;
-	}
-	catch (...) {
-		throw InstallerException("unknown exception occured on intializing Installer");
-	}
 		
 	_rollbackHandler = std::make_unique<RollbackHandler>();
 
@@ -40,16 +28,11 @@ Installer::~Installer() {
 
 void Installer::copy() {
 	try {
-		_destinationPath->act();
-		// todo: change log based on the action
-		_logger.push_back("created directory successfully");
-		_rollbackHandler->add_action(_destinationPath);
-
-		for (auto currentSourcePath : _sourcePaths) {
-			currentSourcePath->act();
-			_logger.push_back("successfully copied path");
-
-			_rollbackHandler->add_action(currentSourcePath);
+		for (auto action : _actions) {
+			action->act();
+			// todo: meaningfull debug
+			_logger.push_back("finished " GET_CLASS_NAME(action));
+			_rollbackHandler->add_action(action);
 		}
 
 		return;
