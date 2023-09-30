@@ -7,7 +7,7 @@ int main() {
 	std::vector<LPCWSTR> sourcePaths = {
 		L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\1.txt",
 		L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\bla",
-		L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\bla23",
+		L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\bla2",
 		L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\bla3"
 	};
 

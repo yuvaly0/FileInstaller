@@ -8,7 +8,7 @@ class CopyPathAction : public Action
 public:
 	CopyPathAction(LPCWSTR sourcePath, std::shared_ptr<wchar_t[]> destinationPath);
 
-	void copy(std::shared_ptr<CreateDirectoryAction> destinationPath);
+	void act() override;
 	void rollback() override;
 
 	bool _isDirectory;

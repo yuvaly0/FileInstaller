@@ -46,7 +46,7 @@ void Installer::copy() {
 		_rollbackHandler->add_action(_destinationPath);
 
 		for (auto currentSourcePath : _sourcePaths) {
-			currentSourcePath->copy(_destinationPath);
+			currentSourcePath->act();
 			_logger.push_back("successfully copied path");
 
 			_rollbackHandler->add_action(currentSourcePath);

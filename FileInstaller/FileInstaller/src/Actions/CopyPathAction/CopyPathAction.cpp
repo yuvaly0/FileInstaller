@@ -106,7 +106,7 @@ void CopyPathAction::copy_directory() {
 	}
 }
 
-void CopyPathAction::copy(std::shared_ptr<CreateDirectoryAction> destinationPath) {
+void CopyPathAction::act() {
 	initialize();
 
 	if (_isDirectory) {
