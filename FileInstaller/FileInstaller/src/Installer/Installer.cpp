@@ -6,11 +6,25 @@
 #include "../Rollback/Actions/CopiedDirRollbackAction/CopiedDirRollbackAction.h"
 #include "../Exceptions/InstallerException.h"
 
-Installer::Installer(std::shared_ptr<DestinationPath> destinationPath, std::vector<std::shared_ptr<SourcePath>> sourcePaths)
-	: _destinationPath(destinationPath), _sourcePaths(sourcePaths) {
-	
-	_rollbackHandler = std::make_unique<RollbackHandler>();
+Installer::Installer(LPCWSTR destinationPath, std::vector<LPCWSTR> sourcePaths) {
 	_logger = {};
+
+	try {
+		_destinationPath = std::make_shared<DestinationPath>(destinationPath);
+
+		for (auto sourcePath : sourcePaths) {
+			_sourcePaths.emplace_back(std::make_shared<SourcePath>(sourcePath, _destinationPath->_path));
+		}
+	}
+	catch (InstallerException e) {
+		_logger.push_back(e.what());
+		throw e;
+	}
+	catch (...) {
+		throw InstallerException("unknown exception occured on intializing Installer");
+	}
+		
+	_rollbackHandler = std::make_unique<RollbackHandler>();
 
 	auto initializeComResult = CoInitialize(NULL);
 
@@ -49,8 +63,7 @@ void Installer::copy() {
 			_rollbackHandler->add_action(std::make_unique<CreatedDirRollbackAction>(_destinationPath->_path));
 		}
 
-		for (auto i = 0; i < _sourcePaths.size(); i++) {
-			std::shared_ptr<SourcePath> currentSourcePath = _sourcePaths.at(i);
+		for (auto currentSourcePath : _sourcePaths) {
 			currentSourcePath->copy_path(_destinationPath);
 			_logger.push_back("successfully copied path");
 
