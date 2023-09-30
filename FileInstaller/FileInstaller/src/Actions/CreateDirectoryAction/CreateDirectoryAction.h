@@ -1,8 +1,9 @@
 #pragma once
 #include <windows.h>
 #include <memory>
+#include "../Action.h"
 
-class CreateDirectoryAction
+class CreateDirectoryAction : public Action
 {
 public:
 	CreateDirectoryAction(LPCWSTR destinationPath);
@@ -13,7 +14,8 @@ public:
 	};
 
 	CopyResults tryCreate();
-	
+	void rollback() override;
+
 	std::shared_ptr<wchar_t[]> _path;
 
 private:

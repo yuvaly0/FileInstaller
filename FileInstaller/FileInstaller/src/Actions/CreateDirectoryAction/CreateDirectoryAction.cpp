@@ -66,3 +66,7 @@ CreateDirectoryAction::CopyResults CreateDirectoryAction::tryCreate() {
 		}
 	}
 }
+
+void CreateDirectoryAction::rollback() {
+	RemoveDirectoryW(_path.get());
+}
