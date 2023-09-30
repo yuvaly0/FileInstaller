@@ -1,9 +1,9 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "../Path/SourcePath/SourcePath.h"
-#include "../Path/DestinationPath/DestinationPath.h"
 #include "../Rollback/RollbackHandler.h"
+#include "../Actions/CreateDirectoryAction/CreateDirectoryAction.h"
+#include "../Actions/SourcePath/SourcePath.h"
 
 class Installer {
 public:
@@ -16,7 +16,8 @@ private:
 	void rollback();
 
 	std::vector<std::shared_ptr<SourcePath>> _sourcePaths;
-	std::shared_ptr<DestinationPath> _destinationPath;
+	std::shared_ptr<CreateDirectoryAction> _destinationPath;
 	std::unique_ptr<RollbackHandler> _rollbackHandler;
 	std::vector<std::string> _logger;
+	bool _shouldRollback;
 };

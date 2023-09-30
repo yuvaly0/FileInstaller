@@ -135,8 +135,8 @@
     <ClCompile Include="src\Rollback\Actions\CopiedFile\CopiedFileAction.cpp" />
     <ClCompile Include="src\Rollback\Actions\RollbackAction.cpp" />
     <ClCompile Include="src\Rollback\RollbackHandler.cpp" />
-    <ClCompile Include="src\Path\SourcePath\SourcePath.cpp" />
-    <ClCompile Include="src\Path\DestinationPath\DestinationPath.cpp" />
+    <ClCompile Include="src\Actions\SourcePath\SourcePath.cpp" />
+    <ClCompile Include="src\Actions\CreateDirectoryAction\CreateDirectoryAction.cpp" />
     <ClCompile Include="src\Installer\Installer.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Utils\Utils.cpp" />
@@ -148,8 +148,8 @@
     <ClInclude Include="src\Rollback\Actions\CopiedFile\CopiedFileAction.h" />
     <ClInclude Include="src\Rollback\Actions\RollbackAction.h" />
     <ClInclude Include="src\Rollback\RollbackHandler.h" />
-    <ClInclude Include="src\Path\SourcePath\SourcePath.h" />
-    <ClInclude Include="src\Path\DestinationPath\DestinationPath.h" />
+    <ClInclude Include="src\Actions\SourcePath\SourcePath.h" />
+    <ClInclude Include="src\Actions\CreateDirectoryAction\CreateDirectoryAction.h" />
     <ClInclude Include="src\Installer\Installer.h" />
     <ClInclude Include="src\Utils\Utils.h" />
   </ItemGroup>

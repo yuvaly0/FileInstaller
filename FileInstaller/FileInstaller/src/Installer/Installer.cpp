@@ -10,7 +10,7 @@ Installer::Installer(LPCWSTR destinationPath, std::vector<LPCWSTR> sourcePaths) 
 	_logger = {};
 
 	try {
-		_destinationPath = std::make_shared<DestinationPath>(destinationPath);
+		_destinationPath = std::make_shared<CreateDirectoryAction>(destinationPath);
 
 		for (auto sourcePath : sourcePaths) {
 			_sourcePaths.emplace_back(std::make_shared<SourcePath>(sourcePath, _destinationPath->_path));
@@ -56,9 +56,9 @@ void Installer::rollback() {
 
 void Installer::copy() {
 	try {
-		DestinationPath::CopyResults result = _destinationPath->tryCreate();
+		CreateDirectoryAction::CopyResults result = _destinationPath->tryCreate();
 
-		if (result == DestinationPath::CREATED_DIRECTORY) {
+		if (result == CreateDirectoryAction::CREATED_DIRECTORY) {
 			_logger.push_back("created directory successfully");
 			_rollbackHandler->add_action(std::make_unique<CreatedDirRollbackAction>(_destinationPath->_path));
 		}

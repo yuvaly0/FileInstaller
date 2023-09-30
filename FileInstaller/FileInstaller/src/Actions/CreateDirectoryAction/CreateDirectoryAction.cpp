@@ -2,11 +2,11 @@
 #include <ShlObj_core.h>
 #include <Shlwapi.h>
 #include <stdexcept>
-#include "DestinationPath.h"
-#include "../../Exceptions/InstallerException.h"
 #include <strsafe.h>
+#include "./CreateDirectoryAction.h"
+#include "../../Exceptions/InstallerException.h"
 
-DestinationPath::DestinationPath(LPCWSTR destinationPath) {
+CreateDirectoryAction::CreateDirectoryAction(LPCWSTR destinationPath) {
 	_path.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
 	_path[0] = L'\0';
 	
@@ -32,11 +32,11 @@ DestinationPath::DestinationPath(LPCWSTR destinationPath) {
 	}
 };
 
-DestinationPath::CopyResults DestinationPath::tryCreate() {
+CreateDirectoryAction::CopyResults CreateDirectoryAction::tryCreate() {
 	const int isSuccess = SHCreateDirectoryExW(NULL, _path.get(), NULL);
 
 	if (isSuccess == ERROR_SUCCESS) {
-		return DestinationPath::CREATED_DIRECTORY;
+		return CreateDirectoryAction::CREATED_DIRECTORY;
 	}
 
 	// TODO: add parameter to the exception and level (error, info)
@@ -47,7 +47,7 @@ DestinationPath::CopyResults DestinationPath::tryCreate() {
 		// the directory created but one or more of the intermediate folders do not exist
 		createDirectoryError == ERROR_CANCELLED
 		) {
-		return DestinationPath::DIDNT_CREATE_DIRECTORY;
+		return CreateDirectoryAction::DIDNT_CREATE_DIRECTORY;
 	}
 
 	switch (createDirectoryError) {

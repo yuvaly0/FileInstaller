@@ -103,7 +103,7 @@ void SourcePath::copy_directory() {
 	}
 }
 
-void SourcePath::copy_path(std::shared_ptr<DestinationPath> destinationPath) {
+void SourcePath::copy_path(std::shared_ptr<CreateDirectoryAction> destinationPath) {
 	if (_isDirectory) {
 		copy_directory();
 	}

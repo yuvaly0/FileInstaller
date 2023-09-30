@@ -2,10 +2,10 @@
 #include <windows.h>
 #include <memory>
 
-class DestinationPath
+class CreateDirectoryAction
 {
 public:
-	DestinationPath(LPCWSTR destinationPath);
+	CreateDirectoryAction(LPCWSTR destinationPath);
 
 	enum CopyResults {
 		CREATED_DIRECTORY = 1,
