@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <memory>
 #include "../Path.h"
 
 class DestinationPath : public Path
@@ -13,5 +14,7 @@ public:
 	};
 
 	CopyResults tryCreate();
+	
+	std::shared_ptr<wchar_t[]> _destinationPath;
 };
 

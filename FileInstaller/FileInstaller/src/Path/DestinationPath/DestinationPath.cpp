@@ -4,8 +4,33 @@
 #include <stdexcept>
 #include "DestinationPath.h"
 #include "../../Exceptions/InstallerException.h"
+#include <strsafe.h>
 
-DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath) {};
+DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath) {
+	_destinationPath.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
+	_destinationPath[0] = L'\0';
+	
+	bool isPathRelative = PathIsRelativeW(destinationPath);
+
+	if (isPathRelative) {
+		const DWORD amountCharsCopied = GetFullPathNameW(destinationPath, MAX_PATH, _destinationPath.get(), NULL);
+
+		if (amountCharsCopied == 0) {
+			const DWORD getFullPathNameError = GetLastError();
+
+			if (getFullPathNameError == ERROR_INVALID_PARAMETER) {
+				throw InstallerException("could not create directory, invalid or malformed relative path");
+			}
+		}
+	}
+	else {
+		HRESULT concatResult = StringCchCatW(_destinationPath.get(), MAX_PATH, (LPWSTR)destinationPath);
+
+		if (FAILED(concatResult)) {
+			throw InstallerException("Could not initialize destinationPath");
+		}
+	}
+};
 
 DestinationPath::CopyResults DestinationPath::tryCreate() {
 	const int isSuccess = SHCreateDirectoryExW(NULL, _path, NULL);
@@ -36,30 +61,6 @@ DestinationPath::CopyResults DestinationPath::tryCreate() {
 
 		case ERROR_ACCESS_DENIED: {
 			throw InstallerException("could not create directory, not enough premissions");
-		}
-
-		case ERROR_BAD_PATHNAME: {
-			bool isPathRelative = PathIsRelativeW(_path);
-
-			if (!isPathRelative) {
-				throw InstallerException("could not create directory, invalid or malformed absolute path");
-			}
-
-			WCHAR absolutePath[MAX_PATH];
-			const DWORD amountCharsCopied = GetFullPathNameW(_path, MAX_PATH, absolutePath, NULL);
-
-			if (amountCharsCopied == 0) {
-				const DWORD getFullPathNameError = GetLastError();
-
-				if (getFullPathNameError == ERROR_INVALID_PARAMETER) {
-					throw InstallerException("could not create directory, invalid or malformed relative path");
-				}
-			}
-
-			// todo: add 'relative' to the log?
-			_path = absolutePath;
-			auto result = tryCreate();
-			return result;
 		}
 
 		default: {
