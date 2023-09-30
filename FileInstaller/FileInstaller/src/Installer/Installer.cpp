@@ -40,12 +40,10 @@ Installer::~Installer() {
 
 void Installer::copy() {
 	try {
-		CreateDirectoryAction::CopyResults result = _destinationPath->tryCreate();
-
-		if (result == CreateDirectoryAction::CREATED_DIRECTORY) {
-			_logger.push_back("created directory successfully");
-			_rollbackHandler->add_action(_destinationPath);
-		}
+		_destinationPath->act();
+		// todo: change log based on the action
+		_logger.push_back("created directory successfully");
+		_rollbackHandler->add_action(_destinationPath);
 
 		for (auto currentSourcePath : _sourcePaths) {
 			currentSourcePath->copy(_destinationPath);

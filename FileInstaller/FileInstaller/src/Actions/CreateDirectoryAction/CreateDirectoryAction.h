@@ -20,5 +20,7 @@ public:
 
 private:
 	void initialize();
+
+	bool _hasCreatedDirectory;
 };
 

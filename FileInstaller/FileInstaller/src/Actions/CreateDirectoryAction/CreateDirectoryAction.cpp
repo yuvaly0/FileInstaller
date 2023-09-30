@@ -10,6 +10,8 @@ CreateDirectoryAction::CreateDirectoryAction(LPCWSTR destinationPath) {
 	_path.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
 	_path[0] = L'\0';
 	StringCchCatW(_path.get(), MAX_PATH, destinationPath);
+
+	_hasCreatedDirectory = false;
 }
 
 void CreateDirectoryAction::initialize() {
@@ -28,13 +30,14 @@ void CreateDirectoryAction::initialize() {
 	}
 }
 
-CreateDirectoryAction::CopyResults CreateDirectoryAction::tryCreate() {
+void CreateDirectoryAction::act() {
 	initialize();
 
 	const int isSuccess = SHCreateDirectoryExW(NULL, _path.get(), NULL);
 
 	if (isSuccess == ERROR_SUCCESS) {
-		return CreateDirectoryAction::CREATED_DIRECTORY;
+		_hasCreatedDirectory = true;
+		return;
 	}
 
 	// TODO: add parameter to the exception and level (error, info)
@@ -45,7 +48,8 @@ CreateDirectoryAction::CopyResults CreateDirectoryAction::tryCreate() {
 		// the directory created but one or more of the intermediate folders do not exist
 		createDirectoryError == ERROR_CANCELLED
 		) {
-		return CreateDirectoryAction::DIDNT_CREATE_DIRECTORY;
+		_hasCreatedDirectory = false;
+		return;
 	}
 
 	switch (createDirectoryError) {
