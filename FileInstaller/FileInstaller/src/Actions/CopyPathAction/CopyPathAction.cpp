@@ -7,6 +7,7 @@
 CopyPathAction::CopyPathAction(LPCWSTR sourcePath, LPCWSTR destinationPath) : Action() {
 	_sourcePath = sourcePath;
 	_destinationPath = destinationPath;
+	_isDirectory = false;
 };
 
 void CopyPathAction::initialize() {
@@ -25,6 +26,7 @@ void CopyPathAction::initialize() {
 	if (sourcePathAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 		_isDirectory = true;
 
+		// todo: move outside of 'if'
 		const DWORD destinationFilePathAttributes = GetFileAttributesW(_destinationFilePath.get());
 
 		if (destinationFilePathAttributes != INVALID_FILE_ATTRIBUTES) {
