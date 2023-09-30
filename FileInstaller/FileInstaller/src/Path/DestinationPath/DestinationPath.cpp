@@ -6,14 +6,14 @@
 #include "../../Exceptions/InstallerException.h"
 #include <strsafe.h>
 
-DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath) {
-	_destinationPath.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
-	_destinationPath[0] = L'\0';
+DestinationPath::DestinationPath(LPCWSTR destinationPath) {
+	_path.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
+	_path[0] = L'\0';
 	
 	bool isPathRelative = PathIsRelativeW(destinationPath);
 
 	if (isPathRelative) {
-		const DWORD amountCharsCopied = GetFullPathNameW(destinationPath, MAX_PATH, _destinationPath.get(), NULL);
+		const DWORD amountCharsCopied = GetFullPathNameW(destinationPath, MAX_PATH, _path.get(), NULL);
 
 		if (amountCharsCopied == 0) {
 			const DWORD getFullPathNameError = GetLastError();
@@ -24,7 +24,7 @@ DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath
 		}
 	}
 	else {
-		HRESULT concatResult = StringCchCatW(_destinationPath.get(), MAX_PATH, (LPWSTR)destinationPath);
+		HRESULT concatResult = StringCchCatW(_path.get(), MAX_PATH, (LPWSTR)destinationPath);
 
 		if (FAILED(concatResult)) {
 			throw InstallerException("Could not initialize destinationPath");
@@ -33,7 +33,7 @@ DestinationPath::DestinationPath(LPCWSTR destinationPath) : Path(destinationPath
 };
 
 DestinationPath::CopyResults DestinationPath::tryCreate() {
-	const int isSuccess = SHCreateDirectoryExW(NULL, _path, NULL);
+	const int isSuccess = SHCreateDirectoryExW(NULL, _path.get(), NULL);
 
 	if (isSuccess == ERROR_SUCCESS) {
 		return DestinationPath::CREATED_DIRECTORY;

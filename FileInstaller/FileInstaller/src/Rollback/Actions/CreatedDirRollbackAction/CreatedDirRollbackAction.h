@@ -1,15 +1,16 @@
 #pragma once
 #include <windows.h>
+#include <memory>
 #include "../RollbackAction.h"
 
 class CreatedDirRollbackAction :
     public RollbackAction
 {
 public:
-    CreatedDirRollbackAction(LPCWSTR folderPath);
+    CreatedDirRollbackAction(std::shared_ptr<wchar_t[]> destinationPath);
     virtual void rollback();
 
 private:
-    LPCWSTR _folderPath;
+    std::shared_ptr<wchar_t[]> _destinationPath;
 };
 

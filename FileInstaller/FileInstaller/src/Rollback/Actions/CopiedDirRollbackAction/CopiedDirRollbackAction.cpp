@@ -4,12 +4,12 @@
 #include "../../../Utils/Utils.h"
 #include "../../../Exceptions/InstallerException.h"
 
-CopiedDirRollbackAction::CopiedDirRollbackAction(LPCWSTR sourcePath, LPCWSTR destinationPath)
+CopiedDirRollbackAction::CopiedDirRollbackAction(LPCWSTR sourcePath, std::shared_ptr<wchar_t[]> destinationPath)
 	: _sourcePath(sourcePath), _destinationPath(destinationPath), RollbackAction() {};
 
 void CopiedDirRollbackAction::rollback() {
 	// no need to check return value, we've done this before and it worked
-	std::unique_ptr<wchar_t[]> destinationDirectory = Utils::getDestinationFilePath(_destinationPath, _sourcePath);
+	std::unique_ptr<wchar_t[]> destinationDirectory = Utils::getDestinationFilePath(_destinationPath.get(), _sourcePath);
 
 	auto initializeComResult = CoInitialize(NULL);
 

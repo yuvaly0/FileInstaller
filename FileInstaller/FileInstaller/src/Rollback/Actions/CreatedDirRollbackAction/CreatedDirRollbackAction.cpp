@@ -1,7 +1,8 @@
 #include "CreatedDirRollbackAction.h"
 
-CreatedDirRollbackAction::CreatedDirRollbackAction(LPCWSTR folderPath) : _folderPath(folderPath), RollbackAction() {};
+CreatedDirRollbackAction::CreatedDirRollbackAction(std::shared_ptr<wchar_t[]> destinationPath) 
+	: _destinationPath(destinationPath), RollbackAction() {};
 
 void CreatedDirRollbackAction::rollback() {
-	RemoveDirectoryW(_folderPath);
+	RemoveDirectoryW(_destinationPath.get());
 }

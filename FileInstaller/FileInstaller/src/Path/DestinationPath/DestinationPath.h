@@ -3,7 +3,7 @@
 #include <memory>
 #include "../Path.h"
 
-class DestinationPath : public Path
+class DestinationPath
 {
 public:
 	DestinationPath(LPCWSTR destinationPath);
@@ -15,6 +15,6 @@ public:
 
 	CopyResults tryCreate();
 	
-	std::shared_ptr<wchar_t[]> _destinationPath;
+	std::shared_ptr<wchar_t[]> _path;
 };
 
