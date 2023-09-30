@@ -1,6 +1,5 @@
 #pragma once
 #include <memory>
-#include "../Path.h"
 #include "../DestinationPath/DestinationPath.h"
 
 class SourcePath

@@ -135,7 +135,6 @@
     <ClCompile Include="src\Rollback\Actions\CopiedFile\CopiedFileAction.cpp" />
     <ClCompile Include="src\Rollback\Actions\RollbackAction.cpp" />
     <ClCompile Include="src\Rollback\RollbackHandler.cpp" />
-    <ClCompile Include="src\Path\Path.cpp" />
     <ClCompile Include="src\Path\SourcePath\SourcePath.cpp" />
     <ClCompile Include="src\Path\DestinationPath\DestinationPath.cpp" />
     <ClCompile Include="src\Installer\Installer.cpp" />
@@ -149,7 +148,6 @@
     <ClInclude Include="src\Rollback\Actions\CopiedFile\CopiedFileAction.h" />
     <ClInclude Include="src\Rollback\Actions\RollbackAction.h" />
     <ClInclude Include="src\Rollback\RollbackHandler.h" />
-    <ClInclude Include="src\Path\Path.h" />
     <ClInclude Include="src\Path\SourcePath\SourcePath.h" />
     <ClInclude Include="src\Path\DestinationPath\DestinationPath.h" />
     <ClInclude Include="src\Installer\Installer.h" />

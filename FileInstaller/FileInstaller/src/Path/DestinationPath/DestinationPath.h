@@ -1,7 +1,6 @@
 #pragma once
 #include <windows.h>
 #include <memory>
-#include "../Path.h"
 
 class DestinationPath
 {
