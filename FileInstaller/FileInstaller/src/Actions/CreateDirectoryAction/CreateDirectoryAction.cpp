@@ -9,11 +9,14 @@
 CreateDirectoryAction::CreateDirectoryAction(LPCWSTR destinationPath) {
 	_path.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
 	_path[0] = L'\0';
-	
-	bool isPathRelative = PathIsRelativeW(destinationPath);
+	StringCchCatW(_path.get(), MAX_PATH, destinationPath);
+}
+
+void CreateDirectoryAction::initialize() {
+	bool isPathRelative = PathIsRelativeW(_path.get());
 
 	if (isPathRelative) {
-		const DWORD amountCharsCopied = GetFullPathNameW(destinationPath, MAX_PATH, _path.get(), NULL);
+		const DWORD amountCharsCopied = GetFullPathNameW(_path.get(), MAX_PATH, _path.get(), NULL);
 
 		if (amountCharsCopied == 0) {
 			const DWORD getFullPathNameError = GetLastError();
@@ -23,16 +26,11 @@ CreateDirectoryAction::CreateDirectoryAction(LPCWSTR destinationPath) {
 			}
 		}
 	}
-	else {
-		HRESULT concatResult = StringCchCatW(_path.get(), MAX_PATH, (LPWSTR)destinationPath);
-
-		if (FAILED(concatResult)) {
-			throw InstallerException("Could not initialize destinationPath");
-		}
-	}
 }
 
 CreateDirectoryAction::CopyResults CreateDirectoryAction::tryCreate() {
+	initialize();
+
 	const int isSuccess = SHCreateDirectoryExW(NULL, _path.get(), NULL);
 
 	if (isSuccess == ERROR_SUCCESS) {

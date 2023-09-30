@@ -15,5 +15,8 @@ public:
 	CopyResults tryCreate();
 	
 	std::shared_ptr<wchar_t[]> _path;
+
+private:
+	void initialize();
 };
 
