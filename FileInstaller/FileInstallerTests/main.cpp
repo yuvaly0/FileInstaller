@@ -144,17 +144,17 @@ namespace Tests {
 		}
 	}
 
+	void initialize() {
+		auto initializeComResult = CoInitialize(NULL);
+
+		if (FAILED(initializeComResult)) {
+			throw std::exception("couldn't initiailze COM");
+		}
+	}
+
 	namespace CopyPath {
 		LPCWSTR relativeSourcePath = L".\\file";
 		LPCWSTR relativeDestinationPath = L".\\copyMe2";
-
-		void initialize() {
-			auto initializeComResult = CoInitialize(NULL);
-
-			if (FAILED(initializeComResult)) {
-				throw std::exception("couldn't initiailze COM");
-			}
-		}
 
 		bool copy(bool fromRelative = false, bool toRelative = false, bool isSourcePathDirectory = false) {
 			// pre test
@@ -221,14 +221,6 @@ namespace Tests {
 	}
 
 	namespace Rollback {
-		class A : public Action {
-		public:
-			void act() {
-				throw InstallerException("");
-			}
-			void rollback() {}
-		};
-
 		bool rollbackCreateDirectory(bool isRelative = false) {
 			LPCWSTR relativePath = L".\\copyMe2";
 			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
@@ -331,7 +323,71 @@ namespace Tests {
 			return false;
 		}
 	
-		bool rollbackCopy(bool isDirectory = false) { return true; }
+		bool rollbackCopy(bool fromRelative = false, bool toRelative = false, bool isSourcePathDirectory = false) {
+			LPCWSTR relativeSourcePath = L".\\file";
+			LPCWSTR relativeDestinationPath = L".\\copyMe2";
+
+			// pre test
+			initialize();
+
+			auto destinationPathAction = std::make_unique<CreateDirectoryAction>(relativeDestinationPath);
+			destinationPathAction->act();
+
+			auto sourcePathAction = std::make_unique<CreateDirectoryAction>(relativeSourcePath);
+
+			if (isSourcePathDirectory) {
+				sourcePathAction->act();
+			}
+			else {
+				auto handle = CreateFileW(relativeSourcePath, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+
+				if (handle == INVALID_HANDLE_VALUE) {
+					throw std::exception("could not create test file");
+				}
+
+				CloseHandle(handle);
+			}
+
+			// test
+			std::shared_ptr<wchar_t[]> absoluteDestinationPath = Utils::getAbsolutePath(relativeDestinationPath);
+			std::shared_ptr<wchar_t[]> absoluteTestPathName = Utils::getAbsolutePath(relativeSourcePath);
+
+			std::unique_ptr<CopyPathAction> action;
+
+			if (fromRelative && toRelative) {
+				action = std::make_unique<CopyPathAction>(relativeSourcePath, relativeDestinationPath);
+			}
+			else if (!fromRelative && toRelative) {
+				action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), relativeDestinationPath);
+			}
+			else if (fromRelative && !toRelative) {
+				action = std::make_unique<CopyPathAction>(relativeSourcePath, absoluteDestinationPath.get());
+			}
+			else {
+				action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), absoluteDestinationPath.get());
+			}
+
+			action->act();
+			action->rollback();
+
+			const bool hasWorked = !Utils::isPathExists(L".\\copyMe2\\file");
+
+			if (hasWorked) {
+				if (isSourcePathDirectory) {
+					sourcePathAction->rollback();
+				}
+				else {
+					DeleteFileW(relativeSourcePath);
+				}
+
+				destinationPathAction->rollback();
+				CoUninitialize();
+				return true;
+			}
+
+			CoUninitialize();
+			return false;
+		}
 	}
 }
 
@@ -368,6 +424,40 @@ int main() {
 		throw std::exception();
 	}
 
+	if (!Tests::CopyPath::copy(false, false)) {
+		throw std::exception();
+	}
+
+	if (!Tests::CopyPath::copy(false, true)) {
+		throw std::exception();
+	}
+
+	if (!Tests::CopyPath::copy(true, false)) {
+		throw std::exception();
+	}
+
+	if (!Tests::CopyPath::copy(true, true)) {
+		throw std::exception();
+	}
+
+	if (!Tests::CopyPath::copy(false, false, true)) {
+		throw std::exception();
+	}
+
+	if (!Tests::CopyPath::copy(false, true, true)) {
+		throw std::exception();
+	}
+
+	if (!Tests::CopyPath::copy(true, false, true)) {
+		throw std::exception();
+	}
+
+	if (!Tests::CopyPath::copy(true, true, true)) {
+		throw std::exception();
+	}
+
+	// the rollback tests takes in consideration that the 'act' logic works
+
  	if (!Tests::Rollback::rollbackCreateDirectory()) {
 		throw std::runtime_error("");
 	}
@@ -400,35 +490,35 @@ int main() {
 		throw std::exception();
 	}
 
-	if (!Tests::CopyPath::copy(false, false)) {
-		throw std::exception("");
+	if (!Tests::Rollback::rollbackCopy(false, false)) {
+		throw std::exception();
+	}
+	
+	if (!Tests::Rollback::rollbackCopy(false, true)) {
+		throw std::exception();
 	}
 
-	if (!Tests::CopyPath::copy(false, true)) {
-		throw std::exception("");
+	if (!Tests::Rollback::rollbackCopy(true, false)) {
+		throw std::exception();
 	}
 
-	if (!Tests::CopyPath::copy(true, false)) {
-		throw std::exception("");
+	if (!Tests::Rollback::rollbackCopy(true, true)) {
+		throw std::exception();
 	}
 
-	if (!Tests::CopyPath::copy(true, true)) {
-		throw std::exception("");
+	if (!Tests::Rollback::rollbackCopy(false, false, true)) {
+		throw std::exception();
 	}
 
-	if (!Tests::CopyPath::copy(false, false, true)) {
-		throw std::exception("");
+	if (!Tests::Rollback::rollbackCopy(false, true, true)) {
+		throw std::exception();
 	}
 
-	if (!Tests::CopyPath::copy(false, true, true)) {
-		throw std::exception("");
+	if (!Tests::Rollback::rollbackCopy(true, false, true)) {
+		throw std::exception();
 	}
 
-	if (!Tests::CopyPath::copy(true, false, true)) {
-		throw std::exception("");
-	}
-
-	if (!Tests::CopyPath::copy(true, true, true)) {
-		throw std::exception("");
+	if (!Tests::Rollback::rollbackCopy(true, true, true)) {
+		throw std::exception();
 	}
 }
