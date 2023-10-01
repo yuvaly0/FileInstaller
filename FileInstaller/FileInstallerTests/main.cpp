@@ -120,7 +120,28 @@ namespace Tests {
 			return false;
 		}
 	
-	    // test that all if the directory exists already
+		bool createWhenAlreadyExists(bool isRelative = false) {
+			LPCWSTR relativePath = L".\\copyMe2";
+			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+			auto preTestCreation = std::make_unique<CreateDirectoryAction>(relativePath);
+			preTestCreation->act();
+
+			std::unique_ptr<CreateDirectoryAction> action;
+
+			if (isRelative) {
+				action = std::make_unique<CreateDirectoryAction>(relativePath);
+			}
+			else {
+				action = std::make_unique<CreateDirectoryAction>(absolutePath.get());
+			}
+
+			// we check we don't get any exception
+			action->act();
+
+			preTestCreation->rollback();
+
+			return true;
+		}
 	}
 
 	namespace CopyPath {
@@ -309,6 +330,14 @@ int main() {
 
 	if (!Tests::CreateDirectory::createPartialNested(true)) {
 		throw std::runtime_error("");
+	}
+
+	if (!Tests::CreateDirectoryW::createWhenAlreadyExists()) {
+		throw std::exception();
+	}
+
+	if (!Tests::CreateDirectoryW::createWhenAlreadyExists(true)) {
+		throw std::exception();
 	}
 
  	if (!Tests::Rollback::rollbackCreateDirectory()) {
