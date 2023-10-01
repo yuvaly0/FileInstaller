@@ -6,7 +6,7 @@ FileInstaller is atomic, meaning that either it completes his work or he's rever
 
 ## Installation
 
-use git clone and run the project using visual studio
+Use git clone and run the project using visual studio
 
 ```bash
 git clone https://github.com/yuvaly0/FileInstaller.git
@@ -14,7 +14,8 @@ git clone https://github.com/yuvaly0/FileInstaller.git
 
 ## Usage
 
-This installer works in the form of "Actions", each Action is something you would like to do, the currently supported actions are
+This installer works in the form of "Actions", each Action is something you would like to do.  
+The currently supported actions are
 - CreateDirectoryAction
     - Creates a directory and sub-directories as needed given a path
 - CopyPathAction
@@ -33,11 +34,15 @@ This installer works in the form of "Actions", each Action is something you woul
 
 ## I Want To Add My Own Action
 If you'd like to add your own action, you only need to create a class that inherits from the abstract class 'Action' and implement two methods
-- act - the method which does the actual logic of the function (e.g CopyPathAction copies a path)
-- rollback - the method which contains the 'rollback' logic in case other actions have failed after your action has ran
+- act - Does the actual logic of the function (e.g CopyPathAction copies a path)
+- rollback - Contains the 'rollback' logic in case other actions have failed after your action has ran
+
+Pay attention that the 'atomicity' concept start from the moment we call the *copy* method of *Installer*, so your action should not *Throw* inside the constructor.  
+Tip, you can create an *initialize* private method which you will call in start of your *act*, from which you can *Throw*.
 
 ## Where is the rollback occures?
-As mentioned, 'FileInstaller' uses the RAII idiom, we refer to each action as a 'Resource', if we got an exception during the running of the actions, we will set a property named *_shouldRollback*, in the dtor of 'Installer' we check this flag, and as needed we call *_rollbackHandler->rollback*
+As mentioned, 'FileInstaller' uses the RAII idiom, we refer to each action as a 'Resource'.  
+If we got an exception during the running of the actions, we will set a property named *_shouldRollback*, in the dtor of 'Installer' we check this flag, and if needed we call *_rollbackHandler->rollback*.
 
 ## Example
 An example for a main function to look like is 
