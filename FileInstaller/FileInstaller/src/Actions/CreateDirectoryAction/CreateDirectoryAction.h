@@ -12,11 +12,11 @@ public:
 	void act() override;
 	void rollback() override;
 
-	std::shared_ptr<WCHAR[]> _path;
 private:
 	void initialize();
 
 	std::vector<std::shared_ptr<WCHAR[]>> _directoriesToBeRemoved;
 	bool _hasCreatedDirectory;
+	std::shared_ptr<WCHAR[]> _path;
 };
 
