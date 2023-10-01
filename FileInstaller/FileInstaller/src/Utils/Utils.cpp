@@ -5,10 +5,10 @@
 #include "../Exceptions/InstallerException.h"
 
 namespace Utils {
-	std::unique_ptr<wchar_t[]> getDestinationFilePath(LPCWSTR destinationPath, LPCWSTR sourcePath) {
+	std::unique_ptr<WCHAR[]> getDestinationFilePath(LPCWSTR destinationPath, LPCWSTR sourcePath) {
 		LPCWSTR sourceFileName = PathFindFileName(sourcePath);
 
-		auto destinationFilePath = std::make_unique<wchar_t[]>(MAX_PATH);
+		auto destinationFilePath = std::make_unique<WCHAR[]>(MAX_PATH);
 		HRESULT firstConcatResult = StringCchCatW(destinationFilePath.get(), MAX_PATH, (LPWSTR)destinationPath);
 		LPWSTR addBackslashPtrResult = PathAddBackslashW(destinationFilePath.get());
 		HRESULT secondConcatResult = StringCchCatW(destinationFilePath.get(), MAX_PATH, sourceFileName);
@@ -20,8 +20,8 @@ namespace Utils {
 		return destinationFilePath;
 	}
 
-	std::shared_ptr<wchar_t[]> getAbsolutePath(LPCWSTR relativePath) {
-		std::shared_ptr<wchar_t[]> absolutePath(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
+	std::shared_ptr<WCHAR[]> getAbsolutePath(LPCWSTR relativePath) {
+		std::shared_ptr<WCHAR[]> absolutePath(new WCHAR[MAX_PATH], std::default_delete<WCHAR[]>());
 		const DWORD amountCharsCopied = GetFullPathNameW(relativePath, MAX_PATH, absolutePath.get(), NULL);
 
 		if (amountCharsCopied == 0) {

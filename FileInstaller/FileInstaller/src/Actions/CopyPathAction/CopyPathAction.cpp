@@ -5,12 +5,12 @@
 #include "../../Utils/Utils.h"
 
 CopyPathAction::CopyPathAction(LPCWSTR sourcePath, LPCWSTR destinationPath) : Action() {
-	_sourcePath.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
+	_sourcePath.reset(new WCHAR[MAX_PATH], std::default_delete<WCHAR[]>());
 	_sourcePath[0] = L'\0';
 	StringCchCopyExW(_sourcePath.get(), MAX_PATH, sourcePath, NULL, NULL, STRSAFE_NULL_ON_FAILURE);
 
 
-	_destinationPath.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
+	_destinationPath.reset(new WCHAR[MAX_PATH], std::default_delete<WCHAR[]>());
 	_destinationPath[0] = L'\0';
 	StringCchCopyExW(_destinationPath.get(), MAX_PATH, destinationPath, NULL, NULL, STRSAFE_NULL_ON_FAILURE);
 

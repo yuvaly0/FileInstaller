@@ -12,7 +12,7 @@ public:
 	void act() override;
 	void rollback() override;
 
-	std::shared_ptr<wchar_t[]> _path;
+	std::shared_ptr<WCHAR[]> _path;
 private:
 	void initialize();
 

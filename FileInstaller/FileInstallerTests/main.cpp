@@ -223,7 +223,7 @@ namespace Tests {
 	namespace Rollback {
 		bool rollbackCreateDirectory(bool isRelative = false) {
 			LPCWSTR relativePath = L".\\copyMe2";
-			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+			std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 			std::unique_ptr<CreateDirectoryAction> action;
 
 			if (isRelative) {
@@ -243,7 +243,7 @@ namespace Tests {
 
 		bool rollbackCreateDirectoryNested(bool isRelative = false) {
 			LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
-			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+			std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
 			std::vector<std::shared_ptr<WCHAR[]>> directoriesToBeCreated = Utils::getDirectoriesToBeCreated(absolutePath.get());
 			std::unique_ptr<CreateDirectoryAction> action;
@@ -270,7 +270,7 @@ namespace Tests {
 			preTestAction->act();
 
 			LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
-			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+			std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
 			std::vector<std::shared_ptr<WCHAR[]>> directoriesToBeCreated = Utils::getDirectoriesToBeCreated(absolutePath.get());
 			std::unique_ptr<CreateDirectoryAction> action;
@@ -297,7 +297,7 @@ namespace Tests {
 
 		bool rollbackWhenAlreadyExisted(bool isRelative = false) {
 			LPCWSTR relativePath = L".\\copyMe2";
-			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+			std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 			auto preTestCreation = std::make_unique<CreateDirectoryAction>(relativePath);
 			preTestCreation->act();
 
@@ -349,8 +349,8 @@ namespace Tests {
 			}
 
 			// test
-			std::shared_ptr<wchar_t[]> absoluteDestinationPath = Utils::getAbsolutePath(relativeDestinationPath);
-			std::shared_ptr<wchar_t[]> absoluteTestPathName = Utils::getAbsolutePath(relativeSourcePath);
+			std::shared_ptr<WCHAR[]> absoluteDestinationPath = Utils::getAbsolutePath(relativeDestinationPath);
+			std::shared_ptr<WCHAR[]> absoluteTestPathName = Utils::getAbsolutePath(relativeSourcePath);
 
 			std::unique_ptr<CopyPathAction> action;
 

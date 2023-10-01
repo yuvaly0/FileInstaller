@@ -20,8 +20,8 @@ private:
 	void rollback_copy_directory();
 
 	bool _isDirectory;
-	std::shared_ptr<wchar_t[]> _sourcePath;
-	std::unique_ptr<wchar_t[]> _destinationFilePath;
-	std::shared_ptr<wchar_t[]> _destinationPath;
+	std::shared_ptr<WCHAR[]> _sourcePath;
+	std::unique_ptr<WCHAR[]> _destinationFilePath;
+	std::shared_ptr<WCHAR[]> _destinationPath;
 };
 

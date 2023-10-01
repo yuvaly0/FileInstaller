@@ -8,7 +8,7 @@
 #include "../../Utils/Utils.h"
 
 CreateDirectoryAction::CreateDirectoryAction(LPCWSTR destinationPath) {
-	_path.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
+	_path.reset(new WCHAR[MAX_PATH], std::default_delete<WCHAR[]>());
 	_path[0] = L'\0';
 	StringCchCopyExW(_path.get(), MAX_PATH, destinationPath, NULL, NULL, STRSAFE_NULL_ON_FAILURE);
 
@@ -70,7 +70,6 @@ void CreateDirectoryAction::act() {
 	}
 }
 
-// todo: rename wchar_t to WCHAR
 void CreateDirectoryAction::rollback() {
 	if (_hasCreatedDirectory) {
 		for (auto it = _directoriesToBeRemoved.rbegin(); it != _directoriesToBeRemoved.rend(); ++it) {
