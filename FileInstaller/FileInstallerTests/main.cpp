@@ -169,8 +169,35 @@ namespace Tests {
 
 			bool isWorking = TestUtils::Validate::directoriesDeleted(directoriesToBeCreated);
 
+			return isWorking;
+		}
+
+		bool rollbackCreateDirectoryPartialNested(bool isRelative = false) {
+			// pre test
+			LPCWSTR preTestPath = L".\\copyMe2";
+			auto preTestAction = std::make_unique<CreateDirectoryAction>(preTestPath);
+			preTestAction->act();
+
+			LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
+			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+
+			std::vector<std::shared_ptr<WCHAR[]>> directoriesToBeCreated = Utils::getDirectoriesToBeCreated(absolutePath.get());
+			std::unique_ptr<CreateDirectoryAction> action;
+
+			if (isRelative) {
+				action = std::make_unique<CreateDirectoryAction>(relativePath);
+			}
+			else {
+				action = std::make_unique<CreateDirectoryAction>(absolutePath.get());
+			}
+
+			action->act();
+			action->rollback();
+
+			bool isWorking = TestUtils::Validate::directoriesDeleted(directoriesToBeCreated);
+
 			if (isWorking) {
-				TestUtils::deleteNestedDirectory(directoriesToBeCreated);
+				preTestAction->rollback();
 				return true;
 			}
 
