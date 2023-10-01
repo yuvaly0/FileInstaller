@@ -17,7 +17,7 @@ git clone https://github.com/yuvaly0/FileInstaller.git
 This installer works in the form of "Actions", each Action is something you would like to do.  
 The currently supported actions are
 - CreateDirectoryAction
-    - Creates a directory and sub-directories as needed given a path
+    - Creates a directory and sub-directories as needed, given a path
 - CopyPathAction
     - Copies a 'path' given a source and destination paths
     - Able to copy files, empty and non-empty directories
@@ -43,6 +43,9 @@ Tip, you can create an *initialize* private method which you will call in start 
 ## Where is the rollback occures?
 As mentioned, 'FileInstaller' uses the RAII idiom, we refer to each action as a 'Resource'.  
 If we got an exception during the running of the actions, we will set a property named *_shouldRollback*, in the dtor of 'Installer' we check this flag, and if needed we call *_rollbackHandler->rollback*.
+
+## Tests
+FileInstaller has tests for each Action, make sure to add them if you create your own action
 
 ## Example
 An example for a main function to look like is 
