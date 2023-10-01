@@ -393,27 +393,27 @@ namespace Tests {
 
 int main() {
 	if (!Tests::CreateDirectory::create()) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if (!Tests::CreateDirectory::create(true)) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if(!Tests::CreateDirectory::createNested()) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if (!Tests::CreateDirectory::createNested(true)) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if (!Tests::CreateDirectory::createPartialNested()) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if (!Tests::CreateDirectory::createPartialNested(true)) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if (!Tests::CreateDirectoryW::createWhenAlreadyExists()) {
@@ -459,27 +459,27 @@ int main() {
 	// the rollback tests takes in consideration that the 'act' logic works
 
  	if (!Tests::Rollback::rollbackCreateDirectory()) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if (!Tests::Rollback::rollbackCreateDirectory(true)) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if (!Tests::Rollback::rollbackCreateDirectoryNested()) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if (!Tests::Rollback::rollbackCreateDirectoryNested(true)) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if (!Tests::Rollback::rollbackCreateDirectoryPartialNested()) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if (!Tests::Rollback::rollbackCreateDirectoryPartialNested(true)) {
-		throw std::runtime_error("");
+		throw std::exception();
 	}
 
 	if (!Tests::Rollback::rollbackWhenAlreadyExisted()) {
