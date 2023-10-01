@@ -302,6 +302,34 @@ namespace Tests {
 
 			return false;
 		}
+
+		bool rollbackWhenAlreadyExisted(bool isRelative = false) {
+			LPCWSTR relativePath = L".\\copyMe2";
+			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+			auto preTestCreation = std::make_unique<CreateDirectoryAction>(relativePath);
+			preTestCreation->act();
+
+			std::unique_ptr<CreateDirectoryAction> action;
+
+			if (isRelative) {
+				action = std::make_unique<CreateDirectoryAction>(relativePath);
+			}
+			else {
+				action = std::make_unique<CreateDirectoryAction>(absolutePath.get());
+			}
+
+			action->act();
+			action->rollback();
+
+			const bool isWorking = Utils::isPathExists(relativePath);
+			
+			if (isWorking) {
+				preTestCreation->rollback();
+				return true;
+			}
+
+			return false;
+		}
 	
 		bool rollbackCopy(bool isDirectory = false) { return true; }
 	}
@@ -362,6 +390,14 @@ int main() {
 
 	if (!Tests::Rollback::rollbackCreateDirectoryPartialNested(true)) {
 		throw std::runtime_error("");
+	}
+
+	if (!Tests::Rollback::rollbackWhenAlreadyExisted()) {
+		throw std::exception();
+	}
+
+	if (!Tests::Rollback::rollbackWhenAlreadyExisted(true)) {
+		throw std::exception();
 	}
 
 	if (!Tests::CopyPath::copy(false, false)) {
