@@ -400,7 +400,7 @@ int main() {
 		throw std::exception();
 	}
 
-	if(!Tests::CreateDirectory::createNested()) {
+	if (!Tests::CreateDirectory::createNested()) {
 		throw std::exception();
 	}
 
