@@ -124,15 +124,16 @@ namespace Tests {
 	}
 
 	namespace CopyPath {
-		bool copyFrom(bool isRelative = false) {
+		bool copy(bool fromRelative = false, bool toRelative = false) {
 			// pre test
-			LPCWSTR preTestDir = L".\\copyMe2";
-			auto preTestAction = std::make_unique<CreateDirectoryAction>(preTestDir);
+			LPCWSTR relativePreTestDir = L".\\copyMe2";
+			std::shared_ptr<wchar_t[]> absolutePreTestDir = Utils::getAbsolutePath(relativePreTestDir);
+			auto preTestAction = std::make_unique<CreateDirectoryAction>(relativePreTestDir);
 			preTestAction->act();
 
-			LPCWSTR testFileName = L".\\1.txt";
-			std::shared_ptr<wchar_t[]> absoluteTestFileName = Utils::getAbsolutePath(testFileName);
-			auto handle = CreateFileW(testFileName, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+			LPCWSTR relativeTestFileName = L".\\1.txt";
+			std::shared_ptr<wchar_t[]> absoluteTestFileName = Utils::getAbsolutePath(relativeTestFileName);
+			auto handle = CreateFileW(relativeTestFileName, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
 
 			if (handle == INVALID_HANDLE_VALUE) {
 				throw std::exception("could not create test file");
@@ -149,11 +150,17 @@ namespace Tests {
 			// test
 			std::unique_ptr<CopyPathAction> action;
 
-			if (isRelative) {
-				action = std::make_unique<CopyPathAction>(L".\\1.txt", L".\\copyMe2");
+			if (fromRelative && toRelative) {
+				action = std::make_unique<CopyPathAction>(relativeTestFileName, relativePreTestDir);
+			}
+			else if (!fromRelative && toRelative) {
+				action = std::make_unique<CopyPathAction>(absoluteTestFileName.get(), relativePreTestDir);
+			}
+			else if (fromRelative && !toRelative) {
+				action = std::make_unique<CopyPathAction>(relativeTestFileName, absolutePreTestDir.get());
 			}
 			else {
-				action = std::make_unique<CopyPathAction>(absoluteTestFileName.get(), L".\\copyMe2");
+				action = std::make_unique<CopyPathAction>(absoluteTestFileName.get(), absolutePreTestDir.get());
 			}
 
 			action->act();
@@ -161,7 +168,7 @@ namespace Tests {
 			const bool hasWorked = Utils::isPathExists(L".\\copyMe2\\1.txt");
 
 			if (hasWorked) {
-				DeleteFileW(testFileName);
+				DeleteFileW(relativeTestFileName);
 				action->rollback();
 				preTestAction->rollback();
 				CoUninitialize();
@@ -312,11 +319,19 @@ int main() {
 		throw std::runtime_error("");
 	}
 
-	if (!Tests::CopyPath::copyFrom()) {
+	if (!Tests::CopyPath::copy(false, false)) {
 		throw std::exception("");
 	}
 
-	if (!Tests::CopyPath::copyFrom(true)) {
+	if (!Tests::CopyPath::copy(false, true)) {
+		throw std::exception("");
+	}
+
+	if (!Tests::CopyPath::copy(true, false)) {
+		throw std::exception("");
+	}
+
+	if (!Tests::CopyPath::copy(true, true)) {
 		throw std::exception("");
 	}
 }
