@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <vector>
 #include <memory>
 #include "../Action.h"
 
@@ -15,6 +16,7 @@ public:
 private:
 	void initialize();
 
+	std::vector<std::shared_ptr<WCHAR[]>> _directoriesToBeRemoved;
 	bool _hasCreatedDirectory;
 };
 

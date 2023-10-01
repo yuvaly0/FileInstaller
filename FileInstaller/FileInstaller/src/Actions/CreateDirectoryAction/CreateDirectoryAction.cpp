@@ -25,6 +25,8 @@ void CreateDirectoryAction::initialize() {
 	if (isPathRelative) {
 		_path = Utils::getAbsolutePath(_path.get());
 	}
+
+	_directoriesToBeRemoved = Utils::getDirectoriesToBeCreated(_path.get());
 }
 
 void CreateDirectoryAction::act() {
@@ -68,6 +70,12 @@ void CreateDirectoryAction::act() {
 	}
 }
 
+// todo: rename wchar_t to WCHAR
 void CreateDirectoryAction::rollback() {
-	RemoveDirectoryW(_path.get());
+	if (_hasCreatedDirectory) {
+		for (auto it = _directoriesToBeRemoved.rbegin(); it != _directoriesToBeRemoved.rend(); ++it) {
+			RemoveDirectoryW((*it).get());
+		}
+		
+	}
 }
