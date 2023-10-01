@@ -6,12 +6,16 @@
 
 CopyPathAction::CopyPathAction(LPCWSTR sourcePath, LPCWSTR destinationPath) : Action() {
 	_sourcePath = sourcePath;
-	_destinationPath = destinationPath;
+	_destinationPath.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
+	_destinationPath[0] = L'\0';
+	StringCchCopyExW(_destinationPath.get(), MAX_PATH, destinationPath, NULL, NULL, STRSAFE_NULL_ON_FAILURE);
+
 	_isDirectory = false;
 };
 
 void CopyPathAction::initialize() {
-	_destinationFilePath = Utils::getDestinationFilePath(_destinationPath, _sourcePath);
+	_destinationPath = Utils::getAbsolutePath(_destinationPath.get());
+	_destinationFilePath = Utils::getDestinationFilePath(_destinationPath.get(), _sourcePath);
 
 	if (!_destinationFilePath) {
 		throw InstallerException("couldn't copy path, exceeded max size, check to allocate greater path size");
@@ -83,7 +87,7 @@ void CopyPathAction::copy_directory() {
 	CComPtr<IShellItem> pFrom = NULL;
 	CComPtr<IShellItem> pTo = NULL;
 	auto sourceShellCreationResult = SHCreateItemFromParsingName(_sourcePath, NULL, IID_PPV_ARGS(&pFrom));
-	auto toShellCreationResult = SHCreateItemFromParsingName(_destinationPath, NULL, IID_PPV_ARGS(&pTo));
+	auto toShellCreationResult = SHCreateItemFromParsingName(_destinationPath.get(), NULL, IID_PPV_ARGS(&pTo));
 
 	if (FAILED(sourceShellCreationResult) || FAILED(toShellCreationResult)) {
 		throw InstallerException("couldn't create shell items paths");

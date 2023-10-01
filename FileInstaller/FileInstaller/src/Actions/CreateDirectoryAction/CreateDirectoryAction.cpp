@@ -15,7 +15,6 @@ CreateDirectoryAction::CreateDirectoryAction(LPCWSTR destinationPath) {
 	_hasCreatedDirectory = false;
 }
 
-// extract isrelative to util
 void CreateDirectoryAction::initialize() {
 	if (!_path) {
 		throw InstallerException("could not copy initial destination");

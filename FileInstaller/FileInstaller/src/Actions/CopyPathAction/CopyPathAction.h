@@ -3,7 +3,7 @@
 #include "../CreateDirectoryAction/CreateDirectoryAction.h"
 #include "../Action.h"
 
-class CopyPathAction : public Action 
+class CopyPathAction : public Action
 {
 public:
 	CopyPathAction(LPCWSTR sourcePath, LPCWSTR destinationPath);
@@ -22,6 +22,6 @@ private:
 	void rollback_copy_directory();
 
 	std::unique_ptr<wchar_t[]> _destinationFilePath;
-	LPCWSTR _destinationPath;
+	std::shared_ptr<wchar_t[]> _destinationPath;
 };
 
