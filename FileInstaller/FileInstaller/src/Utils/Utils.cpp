@@ -1,3 +1,4 @@
+#include <vector>
 #include "shlwapi.h"
 #include "strsafe.h"
 #include "Utils.h"
@@ -34,5 +35,37 @@ namespace Utils {
 		}
 
 		return absolutePath;
+	}
+
+	// todo: check who implements and he should use this
+	bool isPathExists(LPCWSTR path) {
+		const DWORD pathAttributes = GetFileAttributesW(path);
+		auto isCreated = pathAttributes != INVALID_FILE_ATTRIBUTES;
+
+		return isCreated;
+	}
+
+	std::vector<std::shared_ptr<WCHAR[]>> getDirectoriesToBeCreated(LPCWSTR path) {
+		std::vector<std::shared_ptr<WCHAR[]>> directoriesToBeCreated = {};
+		LPCWSTR cursor = path;
+		WCHAR currentPath[MAX_PATH] = {};
+
+		// find the directories in the heirarchy that doesnt exist
+		while (*cursor) {
+			if (*cursor == L'\\' || *(cursor + 1) == L'\0') {
+				auto length = cursor - path + 1;
+				lstrcpyn(currentPath, path, length + 1);
+
+				if (!isPathExists(currentPath)) {
+					std::shared_ptr<WCHAR[]> toBeCopiedPath(new WCHAR[MAX_PATH], std::default_delete<WCHAR[]>());
+					lstrcpyn(toBeCopiedPath.get(), path, length + 1);
+					directoriesToBeCreated.push_back(toBeCopiedPath);
+				}
+			}
+
+			cursor++;
+		}
+
+		return directoriesToBeCreated;
 	}
 }
