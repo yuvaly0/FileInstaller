@@ -66,3 +66,10 @@ int main() {
 	installer->copy();
 }
 ```
+
+What we see here is a set of actions, that given them the installer will perfrom this actions:
+1. Create a directory, if needed, at ".\\copyMe2"
+2. Copy the file at "C:\\Users\\yuvalyo\\Documents\\Projects\\FileInstaller\\copyMe\\1.txt" to the created directory
+3. Copy the folder at "C:\\Users\\yuvalyo\\Documents\\Projects\\FileInstaller\\copyMe\\bla" to the created directory
+4. Copy the folder at "C:\\Users\\yuvalyo\\Documents\\Projects\\FileInstaller\\copyMe\\bla2" to the created directory
+5. Copy the folder at "C:\\Users\\yuvalyo\\Documents\\Projects\\FileInstaller\\copyMe\\bla3" to the created directory
