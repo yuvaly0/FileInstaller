@@ -12,16 +12,9 @@
 
 namespace TestUtils {
 	namespace Validate {
-		bool directoryExists(LPCWSTR path) {
-			const DWORD pathAttributes = GetFileAttributesW(path);
-			auto isCreated = pathAttributes != INVALID_FILE_ATTRIBUTES;
-
-			return isCreated;
-		}
-
 		bool directoriesDeleted(std::vector<std::shared_ptr<WCHAR[]>> paths) {
 			for (auto it = paths.begin(); it != paths.end(); ++it) {
-				if (directoryExists(((*it).get()))) {
+				if (Utils::isPathExists(((*it).get()))) {
 					return false;
 				}
 			}
@@ -84,7 +77,7 @@ TEST_P(CreateDirectoryFixture, CreateNested) {
 		action->act();
 	}
 
-	bool doesDirectoryExist = TestUtils::Validate::directoryExists(absolutePath.get());
+	bool doesDirectoryExist = Utils::isPathExists(absolutePath.get());
 
 	if (doesDirectoryExist) {
 		TestUtils::deleteNestedDirectory(directoriesToBeCreated);
@@ -115,7 +108,7 @@ TEST_P(CreateDirectoryFixture, CreatePartialNested) {
 		action->act();
 	}
 
-	bool doesDirectoryExist = TestUtils::Validate::directoryExists(absolutePath.get());
+	bool doesDirectoryExist = Utils::isPathExists(absolutePath.get());
 
 	if (doesDirectoryExist) {
 		TestUtils::deleteNestedDirectory(directoriesToBeCreated);
@@ -327,7 +320,7 @@ TEST_P(RollbackFixture, rollbackCreateDirectory) {
 	action->act();
 	action->rollback();
 
-	bool doesDirectoryExists = TestUtils::Validate::directoryExists(absolutePath.get());
+	bool doesDirectoryExists = Utils::isPathExists(absolutePath.get());
 
 	EXPECT_FALSE(doesDirectoryExists);
 }
