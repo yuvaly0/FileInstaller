@@ -5,8 +5,7 @@
 
 #define GET_CLASS_NAME(x) #x
 
-Installer::Installer(std::vector<std::shared_ptr<Action>> actions) {
-	_actions = actions;
+Installer::Installer(const std::vector<std::shared_ptr<Action>>& actions) : _actions(actions) {
 	_logger = {};
 		
 	_rollbackHandler = std::make_unique<RollbackHandler>();
