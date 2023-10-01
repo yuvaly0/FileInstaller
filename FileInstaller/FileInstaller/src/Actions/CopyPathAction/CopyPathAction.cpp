@@ -27,15 +27,14 @@ void CopyPathAction::initialize() {
 		throw InstallerException("couldn't copy path, could not get attributes");
 	}
 
+	const DWORD destinationFilePathAttributes = GetFileAttributesW(_destinationFilePath.get());
+
+	if (destinationFilePathAttributes != INVALID_FILE_ATTRIBUTES) {
+		throw InstallerException("cannot copy path, already exists in the destination");
+	}
+
 	if (sourcePathAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 		_isDirectory = true;
-
-		// todo: move outside of 'if'
-		const DWORD destinationFilePathAttributes = GetFileAttributesW(_destinationFilePath.get());
-
-		if (destinationFilePathAttributes != INVALID_FILE_ATTRIBUTES) {
-			throw InstallerException("cannot copy directory, already exists in the destination");
-		}
 	}
 	else {
 		_isDirectory = false;
@@ -63,10 +62,6 @@ void CopyPathAction::copy_file() {
 
 		case ERROR_ENCRYPTION_FAILED: {
 			throw InstallerException("couldn't copy encrypted file");
-		}
-
-		case ERROR_FILE_EXISTS: {
-			throw InstallerException("couldn't copy file, exists in destination directory");
 		}
 
 		default: {
