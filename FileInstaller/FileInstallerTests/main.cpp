@@ -46,12 +46,8 @@ namespace Tests {
 			LPCWSTR relativePath = L".\\copyMe2";
 			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
-			std::vector<std::shared_ptr<Action>> actions = {
-				std::make_shared<CreateDirectoryAction>(relativePath)
-			};
-
-			auto installer = std::make_unique<Installer>(actions);
-			installer->copy();
+			auto action = std::make_unique<CreateDirectoryAction>(relativePath);
+			action->act();
 
 			bool isWorking = TestUtils::Validate::directoryExists(absolutePath.get());
 
@@ -67,12 +63,8 @@ namespace Tests {
 			LPCWSTR relativePath = L".\\copyMe2";
 			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
-			std::vector<std::shared_ptr<Action>> actions = {
-				std::make_shared<CreateDirectoryAction>(absolutePath.get())
-			};
-
-			auto installer = std::make_unique<Installer>(actions);
-			installer->copy();
+			auto action = std::make_unique<CreateDirectoryAction>(absolutePath.get());
+			action->act();
 
 			bool isWorking = TestUtils::Validate::directoryExists(absolutePath.get());
 
@@ -90,12 +82,28 @@ namespace Tests {
 
 			std::vector<std::shared_ptr<WCHAR[]>> directoriesToBeCreated = Utils::getDirectoriesToBeCreated(absolutePath.get());
 
-			std::vector<std::shared_ptr<Action>> actions = {
-				std::make_shared<CreateDirectoryAction>(relativePath)
-			};
+			
+			auto action = std::make_unique<CreateDirectoryAction>(relativePath);
+			action->act();
 
-			auto installer = std::make_unique<Installer>(actions);
-			installer->copy();
+			bool isWorking = TestUtils::Validate::directoryExists(absolutePath.get());
+
+			if (isWorking) {
+				TestUtils::deleteNestedDirectory(directoriesToBeCreated);
+				return true;
+			}
+
+			return false;
+		}
+
+		bool CreateNestedAbsolute() {
+			LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
+			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+
+			std::vector<std::shared_ptr<WCHAR[]>> directoriesToBeCreated = Utils::getDirectoriesToBeCreated(absolutePath.get());
+
+			auto action = std::make_unique<CreateDirectoryAction>(absolutePath.get());
+			action->act();
 
 			bool isWorking = TestUtils::Validate::directoryExists(absolutePath.get());
 
@@ -185,26 +193,30 @@ namespace Tests {
 
 int main() {
 	if (!Tests::CreateDirectory::CreateRelative()) {
-		throw std::runtime_error(GET_NAME(validateCreateRelativeDirectory));
+		throw std::runtime_error("");
 	}
 
 	if (!Tests::CreateDirectory::CreateAbsolute()) {
-		throw std::runtime_error(GET_NAME(validateCreateAbsoluteDirectory));
+		throw std::runtime_error("");
 	}
 
 	if(!Tests::CreateDirectory::CreateNestedRelative()) {
-		throw std::runtime_error(GET_NAME(validateCreateNestedRelativeDirectory));
+		throw std::runtime_error("");
+	}
+
+	if (!Tests::CreateDirectory::CreateNestedAbsolute()) {
+		throw std::runtime_error("");
 	}
 
 	if (!Tests::Rollback::rollbackCreateDirectoryRelative()) {
-		throw std::runtime_error(GET_NAME(rollbackCreateDirectoryRelative));
+		throw std::runtime_error("");
 	}
 
 	if (!Tests::Rollback::rollbackCreateDirectoryAbsolute()) {
-		throw std::runtime_error(GET_NAME(rollbackCreateDirectoryAbsolute));
+		throw std::runtime_error("");
 	}
 
 	if (!Tests::Rollback::rollbackCreateDirectoryNestedRelative()) {
-		throw std::runtime_error(GET_NAME(rollbackCreateDirectoryNestedRelative));
+		throw std::runtime_error("");
 	}
 }
