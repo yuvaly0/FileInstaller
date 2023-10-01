@@ -124,53 +124,72 @@ namespace Tests {
 	}
 
 	namespace CopyPath {
-		bool copy(bool fromRelative = false, bool toRelative = false) {
-			// pre test
-			LPCWSTR relativePreTestDir = L".\\copyMe2";
-			std::shared_ptr<wchar_t[]> absolutePreTestDir = Utils::getAbsolutePath(relativePreTestDir);
-			auto preTestAction = std::make_unique<CreateDirectoryAction>(relativePreTestDir);
-			preTestAction->act();
+		LPCWSTR relativeSourcePath = L".\\file";
+		LPCWSTR relativeDestinationPath = L".\\copyMe2";
 
-			LPCWSTR relativeTestFileName = L".\\1.txt";
-			std::shared_ptr<wchar_t[]> absoluteTestFileName = Utils::getAbsolutePath(relativeTestFileName);
-			auto handle = CreateFileW(relativeTestFileName, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-
-			if (handle == INVALID_HANDLE_VALUE) {
-				throw std::exception("could not create test file");
-			}
-
-			CloseHandle(handle);
-			
+		void initialize() {
 			auto initializeComResult = CoInitialize(NULL);
 
 			if (FAILED(initializeComResult)) {
-				throw InstallerException("couldn't initiailze COM");
+				throw std::exception("couldn't initiailze COM");
 			}
+		}
 
+		bool copy(bool fromRelative = false, bool toRelative = false, bool isSourcePathDirectory = false) {
+			// pre test
+			initialize();
+
+			auto destinationPathAction = std::make_unique<CreateDirectoryAction>(relativeDestinationPath);
+			destinationPathAction->act();
+
+			auto sourcePathAction = std::make_unique<CreateDirectoryAction>(relativeSourcePath);
+
+			if (isSourcePathDirectory) {
+				sourcePathAction->act();
+			}
+			else {
+				auto handle = CreateFileW(relativeSourcePath, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+
+				if (handle == INVALID_HANDLE_VALUE) {
+					throw std::exception("could not create test file");
+				}
+
+				CloseHandle(handle);
+			}
+			
 			// test
+			std::shared_ptr<wchar_t[]> absoluteDestinationPath = Utils::getAbsolutePath(relativeDestinationPath);
+			std::shared_ptr<wchar_t[]> absoluteTestPathName = Utils::getAbsolutePath(relativeSourcePath);
+
 			std::unique_ptr<CopyPathAction> action;
 
 			if (fromRelative && toRelative) {
-				action = std::make_unique<CopyPathAction>(relativeTestFileName, relativePreTestDir);
+				action = std::make_unique<CopyPathAction>(relativeSourcePath, relativeDestinationPath);
 			}
 			else if (!fromRelative && toRelative) {
-				action = std::make_unique<CopyPathAction>(absoluteTestFileName.get(), relativePreTestDir);
+				action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), relativeDestinationPath);
 			}
 			else if (fromRelative && !toRelative) {
-				action = std::make_unique<CopyPathAction>(relativeTestFileName, absolutePreTestDir.get());
+				action = std::make_unique<CopyPathAction>(relativeSourcePath, absoluteDestinationPath.get());
 			}
 			else {
-				action = std::make_unique<CopyPathAction>(absoluteTestFileName.get(), absolutePreTestDir.get());
+				action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), absoluteDestinationPath.get());
 			}
 
 			action->act();
 
-			const bool hasWorked = Utils::isPathExists(L".\\copyMe2\\1.txt");
+			const bool hasWorked = Utils::isPathExists(L".\\copyMe2\\file");
 
 			if (hasWorked) {
-				DeleteFileW(relativeTestFileName);
+				if (isSourcePathDirectory) {
+					sourcePathAction->rollback();
+				}
+				else {
+					DeleteFileW(relativeSourcePath);
+				}
+				
 				action->rollback();
-				preTestAction->rollback();
+				destinationPathAction->rollback();
 				CoUninitialize();
 				return true;
 			}
@@ -178,9 +197,6 @@ namespace Tests {
 			CoUninitialize();
 			return false;
 		};
-
-		bool copyToRelative() { return true; };
-		bool copyFromRelative() { return true; };
 	}
 
 	namespace Rollback {
@@ -332,6 +348,22 @@ int main() {
 	}
 
 	if (!Tests::CopyPath::copy(true, true)) {
+		throw std::exception("");
+	}
+
+	if (!Tests::CopyPath::copy(false, false, true)) {
+		throw std::exception("");
+	}
+
+	if (!Tests::CopyPath::copy(false, true, true)) {
+		throw std::exception("");
+	}
+
+	if (!Tests::CopyPath::copy(true, false, true)) {
+		throw std::exception("");
+	}
+
+	if (!Tests::CopyPath::copy(true, true, true)) {
 		throw std::exception("");
 	}
 }

@@ -37,7 +37,6 @@ namespace Utils {
 		return absolutePath;
 	}
 
-	// todo: check who implements and he should use this
 	bool isPathExists(LPCWSTR path) {
 		const DWORD pathAttributes = GetFileAttributesW(path);
 		auto isCreated = pathAttributes != INVALID_FILE_ATTRIBUTES;

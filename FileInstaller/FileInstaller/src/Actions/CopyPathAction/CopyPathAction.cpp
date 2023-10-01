@@ -5,7 +5,11 @@
 #include "../../Utils/Utils.h"
 
 CopyPathAction::CopyPathAction(LPCWSTR sourcePath, LPCWSTR destinationPath) : Action() {
-	_sourcePath = sourcePath;
+	_sourcePath.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
+	_sourcePath[0] = L'\0';
+	StringCchCopyExW(_sourcePath.get(), MAX_PATH, sourcePath, NULL, NULL, STRSAFE_NULL_ON_FAILURE);
+
+
 	_destinationPath.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
 	_destinationPath[0] = L'\0';
 	StringCchCopyExW(_destinationPath.get(), MAX_PATH, destinationPath, NULL, NULL, STRSAFE_NULL_ON_FAILURE);
@@ -14,14 +18,15 @@ CopyPathAction::CopyPathAction(LPCWSTR sourcePath, LPCWSTR destinationPath) : Ac
 };
 
 void CopyPathAction::initialize() {
+	_sourcePath = Utils::getAbsolutePath(_sourcePath.get());
 	_destinationPath = Utils::getAbsolutePath(_destinationPath.get());
-	_destinationFilePath = Utils::getDestinationFilePath(_destinationPath.get(), _sourcePath);
+	_destinationFilePath = Utils::getDestinationFilePath(_destinationPath.get(), _sourcePath.get());
 
 	if (!_destinationFilePath) {
 		throw InstallerException("couldn't copy path, exceeded max size, check to allocate greater path size");
 	}
 
-	const DWORD sourcePathAttributes = GetFileAttributesW(_sourcePath);
+	const DWORD sourcePathAttributes = GetFileAttributesW(_sourcePath.get());
 
 	if (sourcePathAttributes == INVALID_FILE_ATTRIBUTES) {
 		throw InstallerException("couldn't copy path, could not get attributes");
@@ -42,7 +47,7 @@ void CopyPathAction::initialize() {
 }
 
 void CopyPathAction::copy_file() {
-	const int result = CopyFileExW(_sourcePath, _destinationFilePath.get(), NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
+	const int result = CopyFileExW(_sourcePath.get(), _destinationFilePath.get(), NULL, NULL, NULL, COPY_FILE_FAIL_IF_EXISTS);
 
 	if (result != 0) {
 		return;
@@ -81,7 +86,7 @@ void CopyPathAction::copy_directory() {
 	// todo: should add another null ?
 	CComPtr<IShellItem> pFrom = NULL;
 	CComPtr<IShellItem> pTo = NULL;
-	auto sourceShellCreationResult = SHCreateItemFromParsingName(_sourcePath, NULL, IID_PPV_ARGS(&pFrom));
+	auto sourceShellCreationResult = SHCreateItemFromParsingName(_sourcePath.get(), NULL, IID_PPV_ARGS(&pFrom));
 	auto toShellCreationResult = SHCreateItemFromParsingName(_destinationPath.get(), NULL, IID_PPV_ARGS(&pTo));
 
 	if (FAILED(sourceShellCreationResult) || FAILED(toShellCreationResult)) {

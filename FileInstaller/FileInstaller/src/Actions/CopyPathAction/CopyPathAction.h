@@ -11,8 +11,6 @@ public:
 	void act() override;
 	void rollback() override;
 
-	bool _isDirectory;
-	LPCWSTR _sourcePath;
 private:
 	void copy_file();
 	void copy_directory();
@@ -21,6 +19,8 @@ private:
 	void rollback_copy_file();
 	void rollback_copy_directory();
 
+	bool _isDirectory;
+	std::shared_ptr<wchar_t[]> _sourcePath;
 	std::unique_ptr<wchar_t[]> _destinationFilePath;
 	std::shared_ptr<wchar_t[]> _destinationPath;
 };
