@@ -7,8 +7,6 @@
 #include "../FileInstaller/src/Utils/Utils.h"
 #include "../FileInstaller/src/Exceptions/InstallerException.h"
 
-#define GET_NAME(x) #x
-
 namespace TestUtils {
 	namespace Validate {
 		bool directoryExists(LPCWSTR path) {
