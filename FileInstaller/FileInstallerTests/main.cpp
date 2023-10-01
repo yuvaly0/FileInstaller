@@ -90,10 +90,10 @@ namespace Tests {
 		}
 
 		bool CreatePartialNested(bool isRelative = false) {
+			// pre test
 			LPCWSTR preTestPath = L".\\copyMe2";
 			auto preTestAction = std::make_unique<CreateDirectoryAction>(preTestPath);
 			preTestAction->act();
-
 
 			LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
 			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
@@ -231,7 +231,7 @@ int main() {
 		throw std::runtime_error("");
 	}
 
-	if (!Tests::Rollback::rollbackCreateDirectory()) {
+ 	if (!Tests::Rollback::rollbackCreateDirectory()) {
 		throw std::runtime_error("");
 	}
 
@@ -244,6 +244,14 @@ int main() {
 	}
 
 	if (!Tests::Rollback::rollbackCreateDirectoryNested(true)) {
+		throw std::runtime_error("");
+	}
+
+	if (!Tests::Rollback::rollbackCreateDirectoryPartialNested()) {
+		throw std::runtime_error("");
+	}
+
+	if (!Tests::Rollback::rollbackCreateDirectoryPartialNested(true)) {
 		throw std::runtime_error("");
 	}
 }
