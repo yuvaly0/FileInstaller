@@ -41,7 +41,7 @@ namespace TestUtils {
 
 namespace Tests {
 	namespace CreateDirectory {
-		bool Create(bool isRelative = false) {
+		bool create(bool isRelative = false) {
 			LPCWSTR relativePath = L".\\copyMe2";
 			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
@@ -64,7 +64,7 @@ namespace Tests {
 			return false;
 		}
 
-		bool CreateNested(bool isRelative = false) {
+		bool createNested(bool isRelative = false) {
 			LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
 			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
@@ -89,7 +89,7 @@ namespace Tests {
 			return false;
 		}
 
-		bool CreatePartialNested(bool isRelative = false) {
+		bool createPartialNested(bool isRelative = false) {
 			// pre test
 			LPCWSTR preTestPath = L".\\copyMe2";
 			auto preTestAction = std::make_unique<CreateDirectoryAction>(preTestPath);
@@ -119,6 +119,61 @@ namespace Tests {
 
 			return false;
 		}
+	
+	    // test that all if the directory exists already
+	}
+
+	namespace CopyPath {
+		bool copyFrom(bool isRelative = false) {
+			// pre test
+			LPCWSTR preTestDir = L".\\copyMe2";
+			auto preTestAction = std::make_unique<CreateDirectoryAction>(preTestDir);
+			preTestAction->act();
+
+			LPCWSTR testFileName = L".\\1.txt";
+			std::shared_ptr<wchar_t[]> absoluteTestFileName = Utils::getAbsolutePath(testFileName);
+			auto handle = CreateFileW(testFileName, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+
+			if (handle == INVALID_HANDLE_VALUE) {
+				throw std::exception("could not create test file");
+			}
+
+			CloseHandle(handle);
+			
+			auto initializeComResult = CoInitialize(NULL);
+
+			if (FAILED(initializeComResult)) {
+				throw InstallerException("couldn't initiailze COM");
+			}
+
+			// test
+			std::unique_ptr<CopyPathAction> action;
+
+			if (isRelative) {
+				action = std::make_unique<CopyPathAction>(L".\\1.txt", L".\\copyMe2");
+			}
+			else {
+				action = std::make_unique<CopyPathAction>(absoluteTestFileName.get(), L".\\copyMe2");
+			}
+
+			action->act();
+
+			const bool hasWorked = Utils::isPathExists(L".\\copyMe2\\1.txt");
+
+			if (hasWorked) {
+				DeleteFileW(testFileName);
+				action->rollback();
+				preTestAction->rollback();
+				CoUninitialize();
+				return true;
+			}
+
+			CoUninitialize();
+			return false;
+		};
+
+		bool copyToRelative() { return true; };
+		bool copyFromRelative() { return true; };
 	}
 
 	namespace Rollback {
@@ -203,31 +258,33 @@ namespace Tests {
 
 			return false;
 		}
+	
+		bool rollbackCopy(bool isDirectory = false) { return true; }
 	}
 }
 
 int main() {
-	if (!Tests::CreateDirectory::Create()) {
+	if (!Tests::CreateDirectory::create()) {
 		throw std::runtime_error("");
 	}
 
-	if (!Tests::CreateDirectory::Create(true)) {
+	if (!Tests::CreateDirectory::create(true)) {
 		throw std::runtime_error("");
 	}
 
-	if(!Tests::CreateDirectory::CreateNested()) {
+	if(!Tests::CreateDirectory::createNested()) {
 		throw std::runtime_error("");
 	}
 
-	if (!Tests::CreateDirectory::CreateNested(true)) {
+	if (!Tests::CreateDirectory::createNested(true)) {
 		throw std::runtime_error("");
 	}
 
-	if (!Tests::CreateDirectory::CreatePartialNested()) {
+	if (!Tests::CreateDirectory::createPartialNested()) {
 		throw std::runtime_error("");
 	}
 
-	if (!Tests::CreateDirectory::CreatePartialNested(true)) {
+	if (!Tests::CreateDirectory::createPartialNested(true)) {
 		throw std::runtime_error("");
 	}
 
@@ -253,5 +310,13 @@ int main() {
 
 	if (!Tests::Rollback::rollbackCreateDirectoryPartialNested(true)) {
 		throw std::runtime_error("");
+	}
+
+	if (!Tests::CopyPath::copyFrom()) {
+		throw std::exception("");
+	}
+
+	if (!Tests::CopyPath::copyFrom(true)) {
+		throw std::exception("");
 	}
 }
