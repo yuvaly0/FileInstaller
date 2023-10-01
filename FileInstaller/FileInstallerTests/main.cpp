@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include <stdexcept>
+#include <fileapi.h>
 #include "../FileInstaller/src/Actions/CreateDirectoryAction/CreateDirectoryAction.h"
 #include "../FileInstaller/src/Installer/Installer.h"
 #include "../FileInstaller/src/Utils/Utils.h"
@@ -87,6 +88,37 @@ namespace Tests {
 
 			return false;
 		}
+
+		bool CreatePartialNested(bool isRelative = false) {
+			LPCWSTR preTestPath = L".\\copyMe2";
+			auto preTestAction = std::make_unique<CreateDirectoryAction>(preTestPath);
+			preTestAction->act();
+
+
+			LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
+			std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+
+			std::vector<std::shared_ptr<WCHAR[]>> directoriesToBeCreated = Utils::getDirectoriesToBeCreated(absolutePath.get());
+
+			if (isRelative) {
+				auto action = std::make_unique<CreateDirectoryAction>(relativePath);
+				action->act();
+			}
+			else {
+				auto action = std::make_unique<CreateDirectoryAction>(absolutePath.get());
+				action->act();
+			}
+
+			bool isWorking = TestUtils::Validate::directoryExists(absolutePath.get());
+
+			if (isWorking) {
+				TestUtils::deleteNestedDirectory(directoriesToBeCreated);
+				preTestAction->rollback();
+				return true;
+			}
+
+			return false;
+		}
 	}
 
 	namespace Rollback {
@@ -161,6 +193,14 @@ int main() {
 	}
 
 	if (!Tests::CreateDirectory::CreateNested(true)) {
+		throw std::runtime_error("");
+	}
+
+	if (!Tests::CreateDirectory::CreatePartialNested()) {
+		throw std::runtime_error("");
+	}
+
+	if (!Tests::CreateDirectory::CreatePartialNested(true)) {
 		throw std::runtime_error("");
 	}
 
