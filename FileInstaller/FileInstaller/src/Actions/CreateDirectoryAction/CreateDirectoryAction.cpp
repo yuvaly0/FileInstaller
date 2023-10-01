@@ -5,28 +5,26 @@
 #include <strsafe.h>
 #include "./CreateDirectoryAction.h"
 #include "../../Exceptions/InstallerException.h"
+#include "../../Utils/Utils.h"
 
 CreateDirectoryAction::CreateDirectoryAction(LPCWSTR destinationPath) {
 	_path.reset(new wchar_t[MAX_PATH], std::default_delete<wchar_t[]>());
 	_path[0] = L'\0';
-	StringCchCatW(_path.get(), MAX_PATH, destinationPath);
+	StringCchCopyExW(_path.get(), MAX_PATH, destinationPath, NULL, NULL, STRSAFE_NULL_ON_FAILURE);
 
 	_hasCreatedDirectory = false;
 }
 
+// extract isrelative to util
 void CreateDirectoryAction::initialize() {
+	if (!_path) {
+		throw InstallerException("could not copy initial destination");
+	}
+
 	bool isPathRelative = PathIsRelativeW(_path.get());
 
 	if (isPathRelative) {
-		const DWORD amountCharsCopied = GetFullPathNameW(_path.get(), MAX_PATH, _path.get(), NULL);
-
-		if (amountCharsCopied == 0) {
-			const DWORD getFullPathNameError = GetLastError();
-
-			if (getFullPathNameError == ERROR_INVALID_PARAMETER) {
-				throw InstallerException("could not create directory, invalid or malformed relative path");
-			}
-		}
+		_path = Utils::getAbsolutePath(_path.get());
 	}
 }
 
