@@ -149,7 +149,92 @@ TEST_P(CreateDirectoryFixture, CreateWhenAlreadyExists) {
 
 INSTANTIATE_TEST_SUITE_P(MyValues, CreateDirectoryFixture, ::testing::Values(true, false));
 
+class CopyPathActionFixture : public ::testing::TestWithParam<std::tuple<bool, bool, bool>> {};
 
+TEST_P(CopyPathActionFixture, Copy) {
+	bool fromRelative = std::get<0>(GetParam());
+	bool toRelative = std::get<1>(GetParam());
+	bool isSourcePathDirectory = std::get<2>(GetParam());
+
+ 	LPCWSTR relativeSourcePath = L".\\file";
+	LPCWSTR relativeDestinationPath = L".\\copyMe2";
+
+	auto initializeComResult = CoInitialize(NULL);
+
+	if (FAILED(initializeComResult)) {
+		throw std::exception("couldn't initiailze COM");
+	}
+
+	auto destinationPathAction = std::make_unique<CreateDirectoryAction>(relativeDestinationPath);
+	destinationPathAction->act();
+
+	auto sourcePathAction = std::make_unique<CreateDirectoryAction>(relativeSourcePath);
+
+	if (isSourcePathDirectory) {
+		sourcePathAction->act();
+	}
+	else {
+		auto handle = CreateFileW(relativeSourcePath, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+
+		if (handle == INVALID_HANDLE_VALUE) {
+			throw std::exception("could not create test file");
+		}
+
+		CloseHandle(handle);
+	}
+
+	// test
+	std::shared_ptr<wchar_t[]> absoluteDestinationPath = Utils::getAbsolutePath(relativeDestinationPath);
+	std::shared_ptr<wchar_t[]> absoluteTestPathName = Utils::getAbsolutePath(relativeSourcePath);
+
+	std::unique_ptr<CopyPathAction> action;
+
+	if (fromRelative && toRelative) {
+		action = std::make_unique<CopyPathAction>(relativeSourcePath, relativeDestinationPath);
+	}
+	else if (!fromRelative && toRelative) {
+		action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), relativeDestinationPath);
+	}
+	else if (fromRelative && !toRelative) {
+		action = std::make_unique<CopyPathAction>(relativeSourcePath, absoluteDestinationPath.get());
+	}
+	else {
+		action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), absoluteDestinationPath.get());
+	}
+
+	action->act();
+
+	const bool doesPathExists = Utils::isPathExists(L".\\copyMe2\\file");
+
+	if (doesPathExists) {
+		if (isSourcePathDirectory) {
+			sourcePathAction->rollback();
+		}
+		else {
+			DeleteFileW(relativeSourcePath);
+		}
+
+		action->rollback();
+		destinationPathAction->rollback();
+	}
+
+	CoUninitialize();
+	
+	EXPECT_TRUE(doesPathExists);
+}
+
+INSTANTIATE_TEST_SUITE_P(CopyPath, CopyPathActionFixture,
+	::testing::Values(
+		std::make_tuple(false, false, false),
+		std::make_tuple(false, true, false),
+		std::make_tuple(true, false, false),
+		std::make_tuple(true, true, false),
+		std::make_tuple(false, false, true),
+		std::make_tuple(false, true, true),
+		std::make_tuple(true, false, true),
+		std::make_tuple(true, true, true)
+	)
+);
 
 namespace Tests {
 	void initialize() {
@@ -158,74 +243,6 @@ namespace Tests {
 		if (FAILED(initializeComResult)) {
 			throw std::exception("couldn't initiailze COM");
 		}
-	}
-
-	namespace CopyPath {
-		LPCWSTR relativeSourcePath = L".\\file";
-		LPCWSTR relativeDestinationPath = L".\\copyMe2";
-
-		bool copy(bool fromRelative = false, bool toRelative = false, bool isSourcePathDirectory = false) {
-			// pre test
-			initialize();
-
-			auto destinationPathAction = std::make_unique<CreateDirectoryAction>(relativeDestinationPath);
-			destinationPathAction->act();
-
-			auto sourcePathAction = std::make_unique<CreateDirectoryAction>(relativeSourcePath);
-
-			if (isSourcePathDirectory) {
-				sourcePathAction->act();
-			}
-			else {
-				auto handle = CreateFileW(relativeSourcePath, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-
-				if (handle == INVALID_HANDLE_VALUE) {
-					throw std::exception("could not create test file");
-				}
-
-				CloseHandle(handle);
-			}
-			
-			// test
-			std::shared_ptr<wchar_t[]> absoluteDestinationPath = Utils::getAbsolutePath(relativeDestinationPath);
-			std::shared_ptr<wchar_t[]> absoluteTestPathName = Utils::getAbsolutePath(relativeSourcePath);
-
-			std::unique_ptr<CopyPathAction> action;
-
-			if (fromRelative && toRelative) {
-				action = std::make_unique<CopyPathAction>(relativeSourcePath, relativeDestinationPath);
-			}
-			else if (!fromRelative && toRelative) {
-				action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), relativeDestinationPath);
-			}
-			else if (fromRelative && !toRelative) {
-				action = std::make_unique<CopyPathAction>(relativeSourcePath, absoluteDestinationPath.get());
-			}
-			else {
-				action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), absoluteDestinationPath.get());
-			}
-
-			action->act();
-
-			const bool hasWorked = Utils::isPathExists(L".\\copyMe2\\file");
-
-			if (hasWorked) {
-				if (isSourcePathDirectory) {
-					sourcePathAction->rollback();
-				}
-				else {
-					DeleteFileW(relativeSourcePath);
-				}
-				
-				action->rollback();
-				destinationPathAction->rollback();
-				CoUninitialize();
-				return true;
-			}
-
-			CoUninitialize();
-			return false;
-		};
 	}
 
 	namespace Rollback {
