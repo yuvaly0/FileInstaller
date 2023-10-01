@@ -77,7 +77,7 @@ void CopyPathAction::copy_file() {
 
 void CopyPathAction::copy_directory() {
 	CComPtr<IFileOperation> fileOperation = NULL;
-	HRESULT createFileOperationResult = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
+	HRESULT createFileOperationResult = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&fileOperation));
 
 	if (FAILED(createFileOperationResult)) {
 		throw InstallerException("couldn't create instance of IFileOperation");
@@ -125,7 +125,7 @@ void CopyPathAction::act() {
 
 void CopyPathAction::rollback_copy_directory() {
 	CComPtr<IFileOperation> fileOperation = NULL;
-	HRESULT createFileOperationResult = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
+	HRESULT createFileOperationResult = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&fileOperation));
 
 	if (FAILED(createFileOperationResult)) {
 		throw InstallerException("couldn't create instance of IFileOperation");
