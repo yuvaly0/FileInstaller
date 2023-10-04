@@ -44,7 +44,7 @@ void CreateDirectoryAction::act() {
 	
 	if (createDirectoryError == ERROR_FILE_EXISTS || 
 		createDirectoryError == ERROR_ALREADY_EXISTS ||
-		// the directory created but one or more of the intermediate folders do not exist
+		// SHCreateDirectoryEx also verifies that the files are visible. If they are not visible, ... If hwnd is set to NULL ... the function returns ERROR_CANCELLED.
 		createDirectoryError == ERROR_CANCELLED
 		) {
 		_hasCreatedDirectory = false;
