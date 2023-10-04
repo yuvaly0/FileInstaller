@@ -151,7 +151,27 @@ TEST_P(CreateDirectoryFixture, CreateWhenAlreadyExists) {
 
 INSTANTIATE_TEST_SUITE_P(MyValues, CreateDirectoryFixture, ::testing::Values(true, false));
 
-class CopyPathActionFixture : public ::testing::TestWithParam<std::tuple<bool, bool, bool>> {};
+class CopyPathActionFixture : public ::testing::TestWithParam<std::tuple<bool, bool, bool>> {
+protected:
+	LPCWSTR _relativeSourcePath = L".\\file";
+	LPCWSTR _relativeDestinationPath = L".\\copyMe2";
+
+	static void SetUpTestCase() {
+		auto initializeComResult = CoInitialize(NULL);
+
+		if (FAILED(initializeComResult)) {
+			throw std::exception("couldn't initiailze COM");
+		}
+	}
+
+	static void TearDownTestCase() {
+		CoUninitialize();
+	}
+
+	void SetUp() override {
+		fs::create_directory(CopyPathActionFixture::_relativeDestinationPath);
+	}
+};
 
 TEST_P(CopyPathActionFixture, Copy) {
 	// pre test
@@ -159,39 +179,28 @@ TEST_P(CopyPathActionFixture, Copy) {
 	bool toRelative = std::get<1>(GetParam());
 	bool isSourcePathDirectory = std::get<2>(GetParam());
 
- 	LPCWSTR relativeSourcePath = L".\\file";
-	LPCWSTR relativeDestinationPath = L".\\copyMe2";
-
-	auto initializeComResult = CoInitialize(NULL);
-
-	if (FAILED(initializeComResult)) {
-		throw std::exception("couldn't initiailze COM");
-	}
-
-	fs::create_directory(relativeDestinationPath);
-
 	if (isSourcePathDirectory) {
-		fs::create_directory(relativeSourcePath);
+		fs::create_directory(_relativeSourcePath);
 	}
 	else {
-		std::ofstream handle(relativeSourcePath);
+		std::ofstream handle(_relativeSourcePath);
 		handle.close();
 	}
 
 	// test
-	std::shared_ptr<WCHAR[]> absoluteDestinationPath = Utils::getAbsolutePath(relativeDestinationPath);
-	std::shared_ptr<WCHAR[]> absoluteTestPathName = Utils::getAbsolutePath(relativeSourcePath);
+	std::shared_ptr<WCHAR[]> absoluteDestinationPath = Utils::getAbsolutePath(_relativeDestinationPath);
+	std::shared_ptr<WCHAR[]> absoluteTestPathName = Utils::getAbsolutePath(_relativeSourcePath);
 
 	std::unique_ptr<CopyPathAction> action;
 
 	if (fromRelative && toRelative) {
-		action = std::make_unique<CopyPathAction>(relativeSourcePath, relativeDestinationPath);
+		action = std::make_unique<CopyPathAction>(_relativeSourcePath, _relativeDestinationPath);
 	}
 	else if (!fromRelative && toRelative) {
-		action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), relativeDestinationPath);
+		action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), _relativeDestinationPath);
 	}
 	else if (fromRelative && !toRelative) {
-		action = std::make_unique<CopyPathAction>(relativeSourcePath, absoluteDestinationPath.get());
+		action = std::make_unique<CopyPathAction>(_relativeSourcePath, absoluteDestinationPath.get());
 	}
 	else {
 		action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), absoluteDestinationPath.get());
@@ -205,13 +214,11 @@ TEST_P(CopyPathActionFixture, Copy) {
 
 	// post test
 	if (doesPathExists) {
-		fs::remove(relativeSourcePath);
+		fs::remove(_relativeSourcePath);
 		action->rollback();
-		fs::remove(relativeDestinationPath);
+		fs::remove(_relativeDestinationPath);
 
 	}
-
-	CoUninitialize();
 }
 
 TEST_P(CopyPathActionFixture, rollbackCopy) {
@@ -220,39 +227,28 @@ TEST_P(CopyPathActionFixture, rollbackCopy) {
 	bool toRelative = std::get<1>(GetParam());
 	bool isSourcePathDirectory = std::get<2>(GetParam());
 
-	LPCWSTR relativeSourcePath = L".\\file";
-	LPCWSTR relativeDestinationPath = L".\\copyMe2";
-
-	auto initializeComResult = CoInitialize(NULL);
-
-	if (FAILED(initializeComResult)) {
-		throw std::exception("couldn't initiailze COM");
-	}
-
-	fs::create_directory(relativeDestinationPath);
-
 	if (isSourcePathDirectory) {
-		fs::create_directory(relativeSourcePath);
+		fs::create_directory(_relativeSourcePath);
 	}
 	else {
-		std::ofstream handle(relativeSourcePath);
+		std::ofstream handle(_relativeSourcePath);
 		handle.close();
 	}
 
 	// test
-	std::shared_ptr<WCHAR[]> absoluteDestinationPath = Utils::getAbsolutePath(relativeDestinationPath);
-	std::shared_ptr<WCHAR[]> absoluteTestPathName = Utils::getAbsolutePath(relativeSourcePath);
+	std::shared_ptr<WCHAR[]> absoluteDestinationPath = Utils::getAbsolutePath(_relativeDestinationPath);
+	std::shared_ptr<WCHAR[]> absoluteTestPathName = Utils::getAbsolutePath(_relativeSourcePath);
 
 	std::unique_ptr<CopyPathAction> action;
 
 	if (fromRelative && toRelative) {
-		action = std::make_unique<CopyPathAction>(relativeSourcePath, relativeDestinationPath);
+		action = std::make_unique<CopyPathAction>(_relativeSourcePath, _relativeDestinationPath);
 	}
 	else if (!fromRelative && toRelative) {
-		action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), relativeDestinationPath);
+		action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), _relativeDestinationPath);
 	}
 	else if (fromRelative && !toRelative) {
-		action = std::make_unique<CopyPathAction>(relativeSourcePath, absoluteDestinationPath.get());
+		action = std::make_unique<CopyPathAction>(_relativeSourcePath, absoluteDestinationPath.get());
 	}
 	else {
 		action = std::make_unique<CopyPathAction>(absoluteTestPathName.get(), absoluteDestinationPath.get());
@@ -267,11 +263,9 @@ TEST_P(CopyPathActionFixture, rollbackCopy) {
 
 	// post test
 	if (!doesPathExists) {
-		fs::remove(relativeSourcePath);
-		fs::remove(relativeDestinationPath);
+		fs::remove(_relativeSourcePath);
+		fs::remove(_relativeDestinationPath);
 	}
-
-	CoUninitialize();
 }
 
 INSTANTIATE_TEST_SUITE_P(CopyPath, CopyPathActionFixture,
