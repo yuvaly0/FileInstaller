@@ -29,8 +29,7 @@ void Installer::copy() {
 	try {
 		for (auto action : _actions) {
 			action->act();
-			// todo: meaningfull debug
-			_logger.push_back("finished " GET_CLASS_NAME(action));
+			_logger.push_back("successfully preformed action");
 			_rollbackHandler->add_action(action);
 		}
 
