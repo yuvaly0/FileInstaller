@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <tuple>
 #include <filesystem>
+#include <fstream>
 #include "../FileInstaller/src/Actions/CreateDirectoryAction/CreateDirectoryAction.h"
 #include "../FileInstaller/src/Installer/Installer.h"
 #include "../FileInstaller/src/Utils/Utils.h"
@@ -25,14 +26,10 @@ namespace TestUtils {
 			return true;
 		}
 	}
-	
-	void deleteDirectory(LPCWSTR path) {
-		RemoveDirectoryW(path);
-	}
 
 	void deleteNestedDirectory(std::vector<std::shared_ptr<WCHAR[]>> paths) {
 		for (auto it = paths.rbegin(); it != paths.rend(); ++it) {
-			deleteDirectory((*it).get());
+			fs::remove((*it).get());
 		}
 	}
 }
@@ -40,11 +37,13 @@ namespace TestUtils {
 class CreateDirectoryFixture : public ::testing::TestWithParam<bool> {};
 
 TEST_P(CreateDirectoryFixture, Create) {
+	// pre test
 	bool isRelative = GetParam();
 
 	LPCWSTR relativePath = L".\\copyMe2";
 	std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
+	// test
 	if (isRelative) {
 		auto action = std::make_unique<CreateDirectoryAction>(relativePath);
 		action->act();
@@ -56,14 +55,16 @@ TEST_P(CreateDirectoryFixture, Create) {
 
 	bool doesDirectoryExist = Utils::isPathExists(absolutePath.get());
 
-	if (doesDirectoryExist) {
-		TestUtils::deleteDirectory(absolutePath.get());
-	}
-
 	EXPECT_TRUE(doesDirectoryExist);
+
+	// post test
+	if (doesDirectoryExist) {
+		fs::remove(absolutePath.get());
+	}
 }
 
 TEST_P(CreateDirectoryFixture, CreateNested) {
+	// pre test
 	bool isRelative = GetParam();
 
 	LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
@@ -71,6 +72,7 @@ TEST_P(CreateDirectoryFixture, CreateNested) {
 
 	std::vector<std::shared_ptr<WCHAR[]>> directoriesToBeCreated = Utils::getDirectoriesToBeCreated(absolutePath.get());
 
+	// test
 	if (isRelative) {
 		auto action = std::make_unique<CreateDirectoryAction>(relativePath);
 		action->act();
@@ -82,26 +84,27 @@ TEST_P(CreateDirectoryFixture, CreateNested) {
 
 	bool doesDirectoryExist = Utils::isPathExists(absolutePath.get());
 
+	EXPECT_TRUE(doesDirectoryExist);
+
+	// post test
 	if (doesDirectoryExist) {
 		TestUtils::deleteNestedDirectory(directoriesToBeCreated);
 	}
-
-	EXPECT_TRUE(doesDirectoryExist);
 }
 
 TEST_P(CreateDirectoryFixture, CreatePartialNested) {
+	// pre test
 	bool isRelative = GetParam();
 
-	// pre test
 	LPCWSTR preTestPath = L".\\copyMe2";
-	auto preTestAction = std::make_unique<CreateDirectoryAction>(preTestPath);
-	preTestAction->act();
+	fs::create_directory(preTestPath);
 
 	LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
 	std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
 	std::vector<std::shared_ptr<WCHAR[]>> directoriesToBeCreated = Utils::getDirectoriesToBeCreated(absolutePath.get());
 
+	// test
 	if (isRelative) {
 		auto action = std::make_unique<CreateDirectoryAction>(relativePath);
 		action->act();
@@ -113,22 +116,24 @@ TEST_P(CreateDirectoryFixture, CreatePartialNested) {
 
 	bool doesDirectoryExist = Utils::isPathExists(absolutePath.get());
 
+	EXPECT_TRUE(doesDirectoryExist);
+
+	// post test
 	if (doesDirectoryExist) {
 		TestUtils::deleteNestedDirectory(directoriesToBeCreated);
-		preTestAction->rollback();		
+		fs::remove(preTestPath);
 	}
-
-	EXPECT_TRUE(doesDirectoryExist);
 }
 
 TEST_P(CreateDirectoryFixture, CreateWhenAlreadyExists) {
+	// pre test
 	bool isRelative = GetParam();
 
 	LPCWSTR relativePath = L".\\copyMe2";
-	std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
-	auto preTestCreation = std::make_unique<CreateDirectoryAction>(relativePath);
-	preTestCreation->act();
+	fs::create_directory(relativePath);
 
+	// test
+	std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
 	std::unique_ptr<CreateDirectoryAction> action;
 
 	if (isRelative) {
@@ -140,7 +145,8 @@ TEST_P(CreateDirectoryFixture, CreateWhenAlreadyExists) {
 
 	EXPECT_NO_THROW(action->act());
 
-	preTestCreation->rollback();
+	// post test
+	fs::remove(relativePath);
 }
 
 INSTANTIATE_TEST_SUITE_P(MyValues, CreateDirectoryFixture, ::testing::Values(true, false));
@@ -148,6 +154,7 @@ INSTANTIATE_TEST_SUITE_P(MyValues, CreateDirectoryFixture, ::testing::Values(tru
 class CopyPathActionFixture : public ::testing::TestWithParam<std::tuple<bool, bool, bool>> {};
 
 TEST_P(CopyPathActionFixture, Copy) {
+	// pre test
 	bool fromRelative = std::get<0>(GetParam());
 	bool toRelative = std::get<1>(GetParam());
 	bool isSourcePathDirectory = std::get<2>(GetParam());
@@ -161,22 +168,14 @@ TEST_P(CopyPathActionFixture, Copy) {
 		throw std::exception("couldn't initiailze COM");
 	}
 
-	auto destinationPathAction = std::make_unique<CreateDirectoryAction>(relativeDestinationPath);
-	destinationPathAction->act();
-
-	auto sourcePathAction = std::make_unique<CreateDirectoryAction>(relativeSourcePath);
+	fs::create_directory(relativeDestinationPath);
 
 	if (isSourcePathDirectory) {
-		sourcePathAction->act();
+		fs::create_directory(relativeSourcePath);
 	}
 	else {
-		auto handle = CreateFileW(relativeSourcePath, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-
-		if (handle == INVALID_HANDLE_VALUE) {
-			throw std::exception("could not create test file");
-		}
-
-		CloseHandle(handle);
+		std::ofstream handle(relativeSourcePath);
+		handle.close();
 	}
 
 	// test
@@ -201,30 +200,26 @@ TEST_P(CopyPathActionFixture, Copy) {
 	action->act();
 
 	const bool doesPathExists = Utils::isPathExists(L".\\copyMe2\\file");
+	
+	EXPECT_TRUE(doesPathExists);
 
+	// post test
 	if (doesPathExists) {
-		if (isSourcePathDirectory) {
-			sourcePathAction->rollback();
-		}
-		else {
-			DeleteFileW(relativeSourcePath);
-		}
-
+		fs::remove(relativeSourcePath);
 		action->rollback();
-		destinationPathAction->rollback();
+		fs::remove(relativeDestinationPath);
+
 	}
 
 	CoUninitialize();
-	
-	EXPECT_TRUE(doesPathExists);
 }
 
 TEST_P(CopyPathActionFixture, rollbackCopy) {
+	// pre test
 	bool fromRelative = std::get<0>(GetParam());
 	bool toRelative = std::get<1>(GetParam());
 	bool isSourcePathDirectory = std::get<2>(GetParam());
 
-	// pre test
 	LPCWSTR relativeSourcePath = L".\\file";
 	LPCWSTR relativeDestinationPath = L".\\copyMe2";
 
@@ -234,22 +229,14 @@ TEST_P(CopyPathActionFixture, rollbackCopy) {
 		throw std::exception("couldn't initiailze COM");
 	}
 
-	auto destinationPathAction = std::make_unique<CreateDirectoryAction>(relativeDestinationPath);
-	destinationPathAction->act();
-
-	auto sourcePathAction = std::make_unique<CreateDirectoryAction>(relativeSourcePath);
+	fs::create_directory(relativeDestinationPath);
 
 	if (isSourcePathDirectory) {
-		sourcePathAction->act();
+		fs::create_directory(relativeSourcePath);
 	}
 	else {
-		auto handle = CreateFileW(relativeSourcePath, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-
-		if (handle == INVALID_HANDLE_VALUE) {
-			throw std::exception("could not create test file");
-		}
-
-		CloseHandle(handle);
+		std::ofstream handle(relativeSourcePath);
+		handle.close();
 	}
 
 	// test
@@ -276,19 +263,15 @@ TEST_P(CopyPathActionFixture, rollbackCopy) {
 
 	const bool doesPathExists = Utils::isPathExists(L".\\copyMe2\\file");
 
-	if (!doesPathExists) {
-		if (isSourcePathDirectory) {
-			sourcePathAction->rollback();
-		}
-		else {
-			DeleteFileW(relativeSourcePath);
-		}
+	EXPECT_FALSE(doesPathExists);
 
-		destinationPathAction->rollback();
+	// post test
+	if (!doesPathExists) {
+		fs::remove(relativeSourcePath);
+		fs::remove(relativeDestinationPath);
 	}
 
 	CoUninitialize();
-	EXPECT_FALSE(doesPathExists);
 }
 
 INSTANTIATE_TEST_SUITE_P(CopyPath, CopyPathActionFixture,
@@ -307,8 +290,10 @@ INSTANTIATE_TEST_SUITE_P(CopyPath, CopyPathActionFixture,
 class RollbackFixture : public ::testing::TestWithParam<bool> {};
 
 TEST_P(RollbackFixture, rollbackCreateDirectory) {
+	// pre test
 	bool isRelative = GetParam();
 
+	// test
 	LPCWSTR relativePath = L".\\copyMe2";
 	std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 	std::unique_ptr<CreateDirectoryAction> action;
@@ -329,8 +314,10 @@ TEST_P(RollbackFixture, rollbackCreateDirectory) {
 }
 
 TEST_P(RollbackFixture, rollbackCreateDirectoryNested) {
+	// pre test
 	bool isRelative = GetParam();
 
+	// test
 	LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
 	std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
@@ -353,13 +340,13 @@ TEST_P(RollbackFixture, rollbackCreateDirectoryNested) {
 }
 
 TEST_P(RollbackFixture, rollbackCreateDirectoryPartialNested) {
+	// pre test
 	bool isRelative = GetParam();
 
-	// pre test
 	LPCWSTR preTestPath = L".\\copyMe2";
-	auto preTestAction = std::make_unique<CreateDirectoryAction>(preTestPath);
-	preTestAction->act();
+	fs::create_directory(preTestPath);
 
+	// test
 	LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
 	std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
@@ -378,21 +365,23 @@ TEST_P(RollbackFixture, rollbackCreateDirectoryPartialNested) {
 
 	bool areDirectoriesDeleted = TestUtils::Validate::directoriesDeleted(directoriesToBeCreated);
 
-	if (areDirectoriesDeleted) {
-		preTestAction->rollback();
-	}
-
 	EXPECT_TRUE(areDirectoriesDeleted);
+
+	// post test
+	if (areDirectoriesDeleted) {
+		fs::remove(preTestPath);
+	}
 }
 
 TEST_P(RollbackFixture, rollbackWhenAlreadyExisted) {
+	//pre test
 	bool isRelative = GetParam();
 
 	LPCWSTR relativePath = L".\\copyMe2";
-	std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
-	auto preTestCreation = std::make_unique<CreateDirectoryAction>(relativePath);
-	preTestCreation->act();
+	fs::create_directory(relativePath);
 
+	// test
+	std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 	std::unique_ptr<CreateDirectoryAction> action;
 
 	if (isRelative) {
@@ -407,11 +396,12 @@ TEST_P(RollbackFixture, rollbackWhenAlreadyExisted) {
 
 	const bool doesDirectoryExists = Utils::isPathExists(relativePath);
 
-	if (doesDirectoryExists) {
-		preTestCreation->rollback();
-	}
-
 	EXPECT_TRUE(doesDirectoryExists);
+
+	// post test
+	if (doesDirectoryExists) {
+		fs::remove(relativePath);
+	}
 }
 
 INSTANTIATE_TEST_SUITE_P(rollback, RollbackFixture, ::testing::Values(true, false));
@@ -437,21 +427,18 @@ TEST(E2E, runningActions) {
 };
 
 TEST(E2E, rollbackActions) {
+	// pre test
+	LPCWSTR sourcePath = L".\\test1";
+	std::ofstream file(sourcePath);
+	file.close();
+
+	// test
+	LPCWSTR destinationPath = L".\\copyMe2\\copy3";
+
 	class RollbackMeAction : public Action {
 		void act() { throw InstallerException(""); }
 		void rollback() {};
 	};
-
-	LPCWSTR destinationPath = L".\\copyMe2\\copy3";
-	LPCWSTR sourcePath = L".\\test1";
-
-	auto handle = CreateFileW(sourcePath, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
-
-	if (handle == INVALID_HANDLE_VALUE) {
-		throw InstallerException("could not create test file");
-	}
-
-	CloseHandle(handle);
 
 	std::vector<std::shared_ptr<Action>> actions = {
 		std::make_shared<CreateDirectoryAction>(destinationPath),
@@ -471,7 +458,8 @@ TEST(E2E, rollbackActions) {
 	EXPECT_FALSE(doesCopiedSourcePathExists);
 	EXPECT_FALSE(doesDestinationPathExists);
 
-	DeleteFileW(sourcePath);
+	// post test
+	fs::remove(sourcePath);
 }
 
 int main(int argc, char** argv) {
