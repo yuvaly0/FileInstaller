@@ -26,11 +26,11 @@ The currently supported actions are
 ## Understaing the different components
 - Installer
     - This is the core class, it receives one parameter
-	```const std::vector<std::shared_ptr<Action>>```, goes over it in a loop and calls *act* for each action
+	```const std::vector<std::unique_ptr<Action>>```, goes over it in a loop and calls *act* for each action
     - After each action, if hasn't threw an exception, we *add* it to a class named "RollbackHandler" 
     - In addition, we preserve in-memory logs for the program (for a case we'd want to send them to a remote server)
  - RollbackHandler
-    - Mentioned a bit in the Installer, this class is responsible for handling the 'rollback' logic, it maintains a ```std::vector<std::shared_ptr<Action>>``` for the actions we succeeded running so far, and calls in a loop for *rollback* on each object
+    - Mentioned a bit in the Installer, this class is responsible for handling the 'rollback' logic, it maintains a ```std::vector<std::unique_ptr<Action>>``` for the actions we succeeded running so far, and calls in a loop for *rollback* on each object
 
 ## I Want To Add My Own Action
 If you'd like to add your own action, you only need to create a class that inherits from the abstract class 'Action' and implement two methods
@@ -52,17 +52,17 @@ An example for a main function to look like is
 
 ```cpp
 int main() {
-	LPCWSTR destinationPath = L".\\copyMe2";
+	LPCWSTR destinationPath = L".\\copyMe2\\copy3";
 	
-	std::vector<std::shared_ptr<Action>> actions = {
-		std::make_shared<CreateDirectoryAction>(destinationPath),
-		std::make_shared<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\FileInstaller\\copyMe\\1.txt", destinationPath),
-		std::make_shared<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\FileInstaller\\copyMe\\bla", destinationPath),
-		std::make_shared<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\FileInstaller\\copyMe\\bla2", destinationPath),
-		std::make_shared<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\FileInstaller\\copyMe\\bla3", destinationPath)
-	};
+	// if we initialize "actions" using initialize list, std::vector might try to copy the values which 
+	// will result in an error in the case of unique_ptr
+	std::vector<std::unique_ptr<Action>> actions;
+	actions.push_back(std::make_unique<CreateDirectoryAction>(destinationPath));
+	actions.push_back(std::make_unique<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\\FileInstaller\\copyMe\\1.txt", destinationPath));
+	actions.push_back(std::make_unique<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\\FileInstaller\\copyMe\\bla", destinationPath));
+	actions.push_back(std::make_unique<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\\FileInstaller\\copyMe\\bla2", destinationPath));
 
-	auto installer = std::make_unique<Installer>(actions);
+	auto installer = std::make_unique<Installer>(std::move(actions));
 	installer->copy();
 }
 ```
