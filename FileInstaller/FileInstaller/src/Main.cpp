@@ -4,14 +4,12 @@
 int main() {
 	LPCWSTR destinationPath = L".\\copyMe2\\copy3";
 	
-	std::vector<std::shared_ptr<Action>> actions = {
-		std::make_shared<CreateDirectoryAction>(destinationPath),
-		std::make_shared<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\1.txt", destinationPath),
-		std::make_shared<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\bla", destinationPath),
-		std::make_shared<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\bla2", destinationPath),
-		std::make_shared<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\winapi exercise\\copyMe\\bla4", destinationPath)
-	};
+	std::vector<std::unique_ptr<Action>> actions;
+	actions.push_back(std::make_unique<CreateDirectoryAction>(destinationPath));
+	actions.push_back(std::make_unique<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\\FileInstaller\\copyMe\\1.txt", destinationPath));
+	actions.push_back(std::make_unique<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\\FileInstaller\\copyMe\\bla", destinationPath));
+	actions.push_back(std::make_unique<CopyPathAction>(L"C:\\Users\\yuvalyo\\Documents\\Projects\\\FileInstaller\\copyMe\\bla2", destinationPath));
 
-	auto installer = std::make_unique<Installer>(actions);
+	auto installer = std::make_unique<Installer>(std::move(actions));
 	installer->copy();
 }

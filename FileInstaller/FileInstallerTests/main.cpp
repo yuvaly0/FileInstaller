@@ -404,17 +404,16 @@ INSTANTIATE_TEST_SUITE_P(rollback, RollbackFixture, ::testing::Values(true, fals
 TEST(E2E, runningActions) {
 	LPCWSTR destinationPath = L".\\copyMe2\\copy3";
 
-	std::vector<std::shared_ptr<Action>> actions = {
-		std::make_shared<CreateDirectoryAction>(destinationPath)
-	};
+	std::vector<std::unique_ptr<Action>> actions;
+	actions.push_back(std::make_unique<CreateDirectoryAction>(destinationPath));
 
-	auto installer = std::make_unique<Installer>(actions);
+	auto installer = std::make_unique<Installer>(std::move(actions));
 	installer->copy();
 
 	const bool doesDirectoryExists = Utils::isPathExists(destinationPath);
 	
 	if (doesDirectoryExists) {
-		actions.at(0)->rollback();
+		fs::remove(destinationPath);
 	}
 
 	EXPECT_TRUE(doesDirectoryExists);
@@ -434,15 +433,15 @@ TEST(E2E, rollbackActions) {
 		void rollback() {};
 	};
 
-	std::vector<std::shared_ptr<Action>> actions = {
-		std::make_shared<CreateDirectoryAction>(destinationPath),
-		std::make_shared<CopyPathAction>(sourcePath, destinationPath),
-		std::make_shared<RollbackMeAction>()
-	};
+	
+	std::vector<std::unique_ptr<Action>> actions;
+	actions.push_back(std::make_unique<CreateDirectoryAction>(destinationPath));
+	actions.push_back(std::make_unique<CopyPathAction>(sourcePath, destinationPath));
+	actions.push_back(std::make_unique<RollbackMeAction>());
 
 	// We create a scope so the dtor of Installer will be called in the end
 	{
-		auto installer = std::make_unique<Installer>(actions);
+		auto installer = std::make_unique<Installer>(std::move(actions));
 		installer->copy();
 	}
 
@@ -455,6 +454,7 @@ TEST(E2E, rollbackActions) {
 	// post test
 	fs::remove(sourcePath);
 }
+
 
 int main(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);

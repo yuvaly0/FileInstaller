@@ -3,7 +3,7 @@
 #include "Installer.h"
 #include "../Exceptions/InstallerException.h"
 
-Installer::Installer(const std::vector<std::shared_ptr<Action>>& actions) : _actions(actions) {
+Installer::Installer(std::vector<std::unique_ptr<Action>> actions) : _actions(std::move(actions)) {
 	_logger = {};
 		
 	_rollbackHandler = std::make_unique<RollbackHandler>();
@@ -25,10 +25,10 @@ Installer::~Installer() {
 
 void Installer::copy() {
 	try {
-		for (auto action : _actions) {
+		for (auto& action : _actions) {
 			action->act();
 			_logger.push_back("successfully preformed action");
-			_rollbackHandler->add_action(action);
+			_rollbackHandler->add_action(std::move(action));
 		}
 
 		return;

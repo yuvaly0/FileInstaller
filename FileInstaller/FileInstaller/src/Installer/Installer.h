@@ -7,13 +7,13 @@
 
 class Installer {
 public:
-	Installer(const std::vector<std::shared_ptr<Action>>& actions);
+	Installer(std::vector<std::unique_ptr<Action>> actions);
 	~Installer();
 
 	void copy();
 
 private:
-	const std::vector<std::shared_ptr<Action>>& _actions;
+	std::vector<std::unique_ptr<Action>> _actions;
 	std::unique_ptr<RollbackHandler> _rollbackHandler;
 	std::vector<std::string> _logger;
 	bool _shouldRollback;

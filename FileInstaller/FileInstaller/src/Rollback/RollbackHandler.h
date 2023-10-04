@@ -7,9 +7,9 @@ class RollbackHandler
 {
 public:
 	void rollback();
-	void add_action(std::shared_ptr<Action> rollbackAction);
+	void add_action(std::unique_ptr<Action> rollbackAction);
 
 private:
-	std::vector<std::shared_ptr<Action>> _rollbackActions;
+	std::vector<std::unique_ptr<Action>> _rollbackActions;
 };
 
