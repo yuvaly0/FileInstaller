@@ -53,7 +53,6 @@ namespace Utils {
 		while (*cursor) {
 			if (*cursor == L'\\' || *(cursor + 1) == L'\0') {
 				const int length = static_cast<int>(cursor - path + 1);
-				// todo: handle the return value with exception?
 				lstrcpynW(currentPath, path, length + 1);
 
 				if (!isPathExists(currentPath)) {
