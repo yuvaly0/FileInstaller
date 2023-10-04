@@ -5,10 +5,13 @@
 #include <fileapi.h>
 #include <gtest/gtest.h>
 #include <tuple>
+#include <filesystem>
 #include "../FileInstaller/src/Actions/CreateDirectoryAction/CreateDirectoryAction.h"
 #include "../FileInstaller/src/Installer/Installer.h"
 #include "../FileInstaller/src/Utils/Utils.h"
 #include "../FileInstaller/src/Exceptions/InstallerException.h"
+
+namespace fs = std::filesystem;
 
 namespace TestUtils {
 	namespace Validate {
@@ -412,6 +415,64 @@ TEST_P(RollbackFixture, rollbackWhenAlreadyExisted) {
 }
 
 INSTANTIATE_TEST_SUITE_P(rollback, RollbackFixture, ::testing::Values(true, false));
+
+
+TEST(E2E, runningActions) {
+	LPCWSTR destinationPath = L".\\copyMe2\\copy3";
+
+	std::vector<std::shared_ptr<Action>> actions = {
+		std::make_shared<CreateDirectoryAction>(destinationPath)
+	};
+
+	auto installer = std::make_unique<Installer>(actions);
+	installer->copy();
+
+	const bool doesDirectoryExists = Utils::isPathExists(destinationPath);
+	
+	if (doesDirectoryExists) {
+		actions.at(0)->rollback();
+	}
+
+	EXPECT_TRUE(doesDirectoryExists);
+};
+
+TEST(E2E, rollbackActions) {
+	class RollbackMeAction : public Action {
+		void act() { throw InstallerException(""); }
+		void rollback() {};
+	};
+
+	LPCWSTR destinationPath = L".\\copyMe2\\copy3";
+	LPCWSTR sourcePath = L".\\test1";
+
+	auto handle = CreateFileW(sourcePath, GENERIC_READ | GENERIC_WRITE, NULL, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (handle == INVALID_HANDLE_VALUE) {
+		throw InstallerException("could not create test file");
+	}
+
+	CloseHandle(handle);
+
+	std::vector<std::shared_ptr<Action>> actions = {
+		std::make_shared<CreateDirectoryAction>(destinationPath),
+		std::make_shared<CopyPathAction>(sourcePath, destinationPath),
+		std::make_shared<RollbackMeAction>()
+	};
+
+	// We create a scope so the dtor of Installer will be called in the end
+	{
+		auto installer = std::make_unique<Installer>(actions);
+		installer->copy();
+	}
+
+	const auto doesCopiedSourcePathExists = Utils::isPathExists(L".\\copyMe2\\copy3\\test1");
+	const auto doesDestinationPathExists = Utils::isPathExists(destinationPath);
+
+	EXPECT_FALSE(doesCopiedSourcePathExists);
+	EXPECT_FALSE(doesDestinationPathExists);
+
+	DeleteFileW(sourcePath);
+}
 
 int main(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);
