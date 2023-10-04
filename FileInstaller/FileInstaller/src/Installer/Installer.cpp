@@ -3,8 +3,6 @@
 #include "Installer.h"
 #include "../Exceptions/InstallerException.h"
 
-#define GET_CLASS_NAME(x) #x
-
 Installer::Installer(const std::vector<std::shared_ptr<Action>>& actions) : _actions(actions) {
 	_logger = {};
 		
