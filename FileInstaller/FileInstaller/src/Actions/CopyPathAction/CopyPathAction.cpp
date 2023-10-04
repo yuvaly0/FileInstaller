@@ -83,7 +83,6 @@ void CopyPathAction::copy_directory() {
 		throw InstallerException("couldn't create instance of IFileOperation");
 	}
 
-	// todo: should add another null ?
 	CComPtr<IShellItem> pFrom = NULL;
 	CComPtr<IShellItem> pTo = NULL;
 	auto sourceShellCreationResult = SHCreateItemFromParsingName(_sourcePath.get(), NULL, IID_PPV_ARGS(&pFrom));
