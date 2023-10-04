@@ -41,7 +41,7 @@ TEST_P(CreateDirectoryFixture, Create) {
 	bool isRelative = GetParam();
 
 	LPCWSTR relativePath = L".\\copyMe2";
-	std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+	std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
 	// test
 	if (isRelative) {
@@ -68,7 +68,7 @@ TEST_P(CreateDirectoryFixture, CreateNested) {
 	bool isRelative = GetParam();
 
 	LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
-	std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+	std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
 	std::vector<std::shared_ptr<WCHAR[]>> directoriesToBeCreated = Utils::getDirectoriesToBeCreated(absolutePath.get());
 
@@ -100,7 +100,7 @@ TEST_P(CreateDirectoryFixture, CreatePartialNested) {
 	fs::create_directory(preTestPath);
 
 	LPCWSTR relativePath = L".\\copyMe2\\copyMe3";
-	std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+	std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 
 	std::vector<std::shared_ptr<WCHAR[]>> directoriesToBeCreated = Utils::getDirectoriesToBeCreated(absolutePath.get());
 
@@ -133,7 +133,7 @@ TEST_P(CreateDirectoryFixture, CreateWhenAlreadyExists) {
 	fs::create_directory(relativePath);
 
 	// test
-	std::shared_ptr<wchar_t[]> absolutePath = Utils::getAbsolutePath(relativePath);
+	std::shared_ptr<WCHAR[]> absolutePath = Utils::getAbsolutePath(relativePath);
 	std::unique_ptr<CreateDirectoryAction> action;
 
 	if (isRelative) {
@@ -179,8 +179,8 @@ TEST_P(CopyPathActionFixture, Copy) {
 	}
 
 	// test
-	std::shared_ptr<wchar_t[]> absoluteDestinationPath = Utils::getAbsolutePath(relativeDestinationPath);
-	std::shared_ptr<wchar_t[]> absoluteTestPathName = Utils::getAbsolutePath(relativeSourcePath);
+	std::shared_ptr<WCHAR[]> absoluteDestinationPath = Utils::getAbsolutePath(relativeDestinationPath);
+	std::shared_ptr<WCHAR[]> absoluteTestPathName = Utils::getAbsolutePath(relativeSourcePath);
 
 	std::unique_ptr<CopyPathAction> action;
 
