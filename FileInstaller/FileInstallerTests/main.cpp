@@ -1,10 +1,4 @@
-#include <windows.h>
-#include <vector>
-#include <memory>
-#include <stdexcept>
-#include <fileapi.h>
 #include <gtest/gtest.h>
-#include <tuple>
 #include <filesystem>
 #include <fstream>
 #include "../FileInstaller/src/Actions/CreateDirectoryAction/CreateDirectoryAction.h"
@@ -400,23 +394,25 @@ TEST_P(RollbackFixture, rollbackWhenAlreadyExisted) {
 
 INSTANTIATE_TEST_SUITE_P(rollback, RollbackFixture, ::testing::Values(true, false));
 
-
 TEST(E2E, runningActions) {
+	// pre test
 	LPCWSTR destinationPath = L".\\copyMe2\\copy3";
 
 	std::vector<std::unique_ptr<Action>> actions;
 	actions.push_back(std::make_unique<CreateDirectoryAction>(destinationPath));
 
+	// test
 	auto installer = std::make_unique<Installer>(std::move(actions));
 	installer->copy();
 
 	const bool doesDirectoryExists = Utils::isPathExists(destinationPath);
-	
+
+	EXPECT_TRUE(doesDirectoryExists);
+
+	// post test
 	if (doesDirectoryExists) {
 		fs::remove(destinationPath);
 	}
-
-	EXPECT_TRUE(doesDirectoryExists);
 };
 
 TEST(E2E, rollbackActions) {
@@ -454,7 +450,6 @@ TEST(E2E, rollbackActions) {
 	// post test
 	fs::remove(sourcePath);
 }
-
 
 int main(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);
