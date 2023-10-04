@@ -52,12 +52,13 @@ namespace Utils {
 		// find the directories in the heirarchy that doesnt exist
 		while (*cursor) {
 			if (*cursor == L'\\' || *(cursor + 1) == L'\0') {
-				auto length = cursor - path + 1;
-				lstrcpyn(currentPath, path, length + 1);
+				const int length = static_cast<int>(cursor - path + 1);
+				// todo: handle the return value with exception?
+				lstrcpynW(currentPath, path, length + 1);
 
 				if (!isPathExists(currentPath)) {
 					std::shared_ptr<WCHAR[]> toBeCopiedPath(new WCHAR[MAX_PATH], std::default_delete<WCHAR[]>());
-					lstrcpyn(toBeCopiedPath.get(), path, length + 1);
+					lstrcpynW(toBeCopiedPath.get(), path, length + 1);
 					directoriesToBeCreated.push_back(toBeCopiedPath);
 				}
 			}
